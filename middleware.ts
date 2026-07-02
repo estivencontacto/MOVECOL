@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { getSupabasePublicCredentials } from "@/lib/supabase/env";
 
 type CookieToSet = {
   name: string;
@@ -10,13 +11,12 @@ type CookieToSet = {
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
 
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const { url: supabaseUrl, publishableKey } = getSupabasePublicCredentials();
 
   const isAdminPath = request.nextUrl.pathname.startsWith("/admin");
   const isConfigErrorPath = request.nextUrl.pathname === "/admin/config-error";
 
-  if (!supabaseUrl || !supabaseAnonKey) {
+  if (!supabaseUrl || !publishableKey) {
     if (isAdminPath && !isConfigErrorPath) {
       console.error("Admin request blocked: Supabase public env vars are not configured.");
       const url = request.nextUrl.clone();
@@ -28,7 +28,7 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
-  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+  const supabase = createServerClient(supabaseUrl, publishableKey, {
     cookies: {
       getAll() {
         return request.cookies.getAll();

@@ -10,7 +10,7 @@ booking, payment, and operations share the same domain contracts.
 - `lib/domain`: TypeScript domain types and Zod validation schemas.
 - `lib/data`: Seed catalog used by the MVP and as a bridge to Supabase-backed CRUD.
 - `lib/services`: Application use cases such as pricing, reservations, email, and WhatsApp preparation.
-- `lib/supabase`: Browser, server, and admin Supabase clients.
+- `lib/supabase`: Browser, SSR, request-context, and admin Supabase clients.
 - `supabase/migrations`: PostgreSQL schema, relations, indexes, RLS policies, and seed data.
 
 ## Growth Model
@@ -27,9 +27,10 @@ Supabase Auth owns identity. The `public.users` profile table stores:
 - `operator`: operational access to reservations, customers, drivers, availability, and payments.
 - `customer`: future customer portal role.
 
-RLS is enabled across operational tables. Server API routes that create public
-reservations use `SUPABASE_SERVICE_ROLE_KEY`, while admin UI routes rely on the
-authenticated Supabase session.
+RLS is enabled across operational tables. Cookie-based Next.js auth keeps using
+`@supabase/ssr` for session refresh, while `@supabase/server` provides
+stateless request handlers, JWT verification through `SUPABASE_JWKS_URL`, an
+RLS-scoped context client, and an admin client backed by `SUPABASE_SECRET_KEY`.
 
 ## Payments
 

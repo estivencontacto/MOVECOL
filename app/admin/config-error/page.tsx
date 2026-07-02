@@ -18,8 +18,9 @@ export default function AdminConfigErrorPage() {
             sin verificacion de sesion.
           </p>
           <p>
-            Revisa `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-            en el entorno de despliegue.
+            Revisa `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY` en el entorno
+            de despliegue. Tambien se aceptan las variables legacy
+            `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
           </p>
         </CardContent>
       </Card>

@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { getSupabasePublicCredentials } from "@/lib/supabase/env";
 
 type CookieToSet = {
   name: string;
@@ -9,10 +10,15 @@ type CookieToSet = {
 
 export async function createClient() {
   const cookieStore = await cookies();
+  const { url, publishableKey } = getSupabasePublicCredentials();
+
+  if (!url || !publishableKey) {
+    throw new Error("Supabase public credentials are not configured");
+  }
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    url,
+    publishableKey,
     {
       cookies: {
         getAll() {

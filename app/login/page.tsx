@@ -19,7 +19,7 @@ export default function LoginPage() {
         <div className="max-w-md rounded-lg border bg-card p-6">
           <h1 className="text-xl font-semibold">Supabase no esta configurado</h1>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Define NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY para activar el login.
+            Define SUPABASE_URL y SUPABASE_PUBLISHABLE_KEY para activar el login.
           </p>
         </div>
       )}

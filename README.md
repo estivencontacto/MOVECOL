@@ -93,9 +93,10 @@ Copia `.env.example` como `.env.local` y completa las variables reales:
 
 ```bash
 NEXT_PUBLIC_APP_URL=https://movecolombia.co
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_URL=
+SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_SECRET_KEY=
+SUPABASE_JWKS_URL=
 
 WOMPI_ENV=sandbox
 WOMPI_PUBLIC_KEY=
@@ -113,6 +114,10 @@ NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY=
 EXCHANGE_RATE_API_KEY=
 USD_COP_FALLBACK_RATE=4000
 ```
+
+`SUPABASE_SECRET_KEY` reemplaza al antiguo `SUPABASE_SERVICE_ROLE_KEY` para
+operaciones administrativas del servidor. Nunca lo expongas en el navegador ni
+lo subas al repositorio.
 
 ## Base De Datos
 

@@ -18,9 +18,10 @@ Agrega estas variables para `Production`, `Preview` y `Development` segun apliqu
 ```bash
 NEXT_PUBLIC_APP_URL=https://movecolombia.co
 
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_URL=
+SUPABASE_PUBLISHABLE_KEY=
+SUPABASE_SECRET_KEY=
+SUPABASE_JWKS_URL=
 
 WOMPI_PUBLIC_KEY=
 WOMPI_PRIVATE_KEY=
@@ -40,7 +41,8 @@ Notas importantes:
 - `WOMPI_PUBLIC_KEY` se usa para crear el link de checkout.
 - `WOMPI_INTEGRITY_SECRET` firma el checkout para que el monto no se manipule.
 - `WOMPI_EVENTS_SECRET` valida webhooks. Si falta, el webhook se rechaza por seguridad.
-- `SUPABASE_SERVICE_ROLE_KEY` nunca va al frontend. Solo se usa del lado servidor.
+- `SUPABASE_SECRET_KEY` nunca va al frontend. Solo se usa del lado servidor.
+- `SUPABASE_JWKS_URL` permite verificar JWTs de usuario con `@supabase/server`.
 - `NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY` es necesaria para autocompletado y minimapas visibles.
 
 ## 3. Aplicar la migracion de Supabase
