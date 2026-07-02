@@ -1,0 +1,93 @@
+import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight, Clock, ShieldCheck, Users } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Price } from "@/components/preferences/site-preferences";
+import type { City, Tour } from "@/lib/domain/types";
+
+export function TourGrid({
+  city,
+  tours,
+  eyebrow = "Tours privados",
+  title = `Experiencias privadas en ${city.name}`,
+  description = city.description,
+  muted = false
+}: {
+  city: City;
+  tours: Tour[];
+  eyebrow?: string;
+  title?: string;
+  description?: string;
+  muted?: boolean;
+}) {
+  return (
+    <section className={muted ? "section bg-muted/55" : "section"}>
+      <div className="container">
+        <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="max-w-3xl">
+            <p className="eyebrow">{eyebrow}</p>
+            <h2 className="mt-3 text-3xl font-semibold md:text-4xl">{title}</h2>
+            <p className="mt-4 leading-7 text-muted-foreground">{description}</p>
+          </div>
+          <Badge className="w-fit bg-secondary text-secondary-foreground">
+            <ShieldCheck className="mr-2 size-3" aria-hidden />
+            Operacion privada
+          </Badge>
+        </div>
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+          {tours.map((tour) => (
+            <Card key={tour.id} className="group flex h-full overflow-hidden">
+              <div className="flex w-full flex-col">
+              <div className="relative aspect-[4/3] overflow-hidden">
+                <Image
+                  src={tour.cardImage ?? tour.gallery[0]}
+                  alt={tour.name}
+                  fill
+                  className="object-cover transition duration-500 group-hover:scale-105"
+                  sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
+                />
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/70 to-transparent p-4">
+                  <Badge className="bg-background/92 text-foreground">
+                    {tour.pricingMode === "global" ? "Plan global" : "Plan privado"}
+                  </Badge>
+                </div>
+              </div>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-2xl">{tour.name}</CardTitle>
+              </CardHeader>
+              <CardContent className="flex flex-1 flex-col">
+                <p className="min-h-[72px] text-sm leading-6 text-muted-foreground">{tour.description}</p>
+                <div className="mt-5 grid gap-3 rounded-md bg-muted/65 p-4 text-sm sm:grid-cols-2">
+                  <span className="flex items-center gap-2 font-medium">
+                    <Clock className="size-4" aria-hidden />
+                    {tour.duration}
+                  </span>
+                  <span className="flex items-center gap-2 font-medium">
+                    <Users className="size-4" aria-hidden />
+                    Min. {tour.minimumPassengers ?? 2}
+                  </span>
+                </div>
+                <div className="mt-5 flex items-end justify-between gap-4 border-t pt-5">
+                  <span className="text-sm font-semibold">
+                    Desde <Price value={tour.basePrice} />
+                    <span className="block text-[0.68rem] font-medium text-muted-foreground">
+                      {tour.pricingMode === "global" ? "precio global" : "por persona, minimo 2"}
+                    </span>
+                  </span>
+                  <Button asChild variant="ghost" className="px-0">
+                    <Link href={`/destinos/${city.slug}/${tour.slug}`}>
+                      Ver tour <ArrowRight className="size-4" aria-hidden />
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}

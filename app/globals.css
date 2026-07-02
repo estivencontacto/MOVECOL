@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 66 32% 95%;
+  --foreground: 228 31% 15%;
+  --card: 0 0% 100%;
+  --card-foreground: 228 31% 15%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 228 31% 15%;
+  --primary: 236 89% 30%;
+  --primary-foreground: 66 32% 97%;
+  --secondary: 72 100% 67%;
+  --secondary-foreground: 228 31% 15%;
+  --muted: 68 26% 90%;
+  --muted-foreground: 229 15% 38%;
+  --accent: 199 72% 72%;
+  --accent-foreground: 236 89% 20%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 229 20% 84%;
+  --input: 229 20% 84%;
+  --ring: 236 89% 30%;
+  --radius: 0.5rem;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+::selection {
+  background: hsl(var(--secondary));
+}
+
+.section {
+  padding-block: clamp(4rem, 7vw, 7rem);
+}
+
+.eyebrow {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.focus-ring {
+  outline: none;
+}
+
+.focus-ring:focus-visible {
+  box-shadow: 0 0 0 3px hsl(var(--ring) / 0.24);
+}
