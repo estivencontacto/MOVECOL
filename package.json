@@ -5,10 +5,12 @@
   "description": "MOVE Colombia premium private transportation and travel experiences platform.",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/deploy-check.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "deploy-check": "node scripts/deploy-check.mjs --production",
     "format": "prettier --write .",
     "db:types": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID > lib/supabase/database.types.ts"
   },

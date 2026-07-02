@@ -1,4 +1,7 @@
-const productionEnv = process.env.VERCEL_ENV === "production" || process.env.NODE_ENV === "production";
+const productionEnv =
+  process.argv.includes("--production") ||
+  process.env.DEPLOY_CHECK_STRICT === "1" ||
+  process.env.VERCEL_ENV === "production";
 
 const required = [
   "NEXT_PUBLIC_APP_URL",
@@ -10,6 +13,11 @@ const required = [
   "WOMPI_EVENTS_SECRET",
   "WOMPI_INTEGRITY_SECRET"
 ];
+
+if (!productionEnv) {
+  console.log("Skipping deployment environment check outside production.");
+  process.exit(0);
+}
 
 const missing = required.filter((key) => !process.env[key]);
 const criticalProductionMissing = ["WOMPI_EVENTS_SECRET", "SUPABASE_SERVICE_ROLE_KEY"].filter(
