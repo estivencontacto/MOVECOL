@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { LoginForm } from "@/components/admin/login-form";
 import { isSupabaseConfigured } from "@/lib/env";
 
@@ -14,7 +15,9 @@ export default function LoginPage() {
   return (
     <section className="grid min-h-[calc(100vh-4rem)] place-items-center bg-muted/45 px-4 py-16">
       {isSupabaseConfigured() ? (
-        <LoginForm />
+        <Suspense fallback={<LoginFallback />}>
+          <LoginForm />
+        </Suspense>
       ) : (
         <div className="max-w-md rounded-lg border bg-card p-6">
           <h1 className="text-xl font-semibold">Supabase no esta configurado</h1>
@@ -24,5 +27,13 @@ export default function LoginPage() {
         </div>
       )}
     </section>
+  );
+}
+
+function LoginFallback() {
+  return (
+    <div className="w-full max-w-md rounded-lg border bg-card p-6">
+      <p className="text-sm font-medium text-muted-foreground">Cargando acceso...</p>
+    </div>
   );
 }
