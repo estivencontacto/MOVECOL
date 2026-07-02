@@ -8,6 +8,7 @@ import {
   HeartPulse,
   MapPinned,
   Plane,
+  PlaneTakeoff,
   ShieldCheck,
   Sparkles
 } from "lucide-react";
@@ -95,7 +96,10 @@ export function CityServices({
 
             return (
               <SectionReveal key={service.id}>
-                <Card className="group flex h-full overflow-hidden">
+                <Card className="group travel-card flex h-full overflow-hidden transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_26px_80px_-42px_rgba(15,23,42,0.55)]">
+                  <span className="travel-icon" aria-hidden="true">
+                    <PlaneTakeoff className="size-4" aria-hidden />
+                  </span>
                   <div className="flex w-full flex-col">
                   {image ? (
                     <div className="relative aspect-[16/10] overflow-hidden">

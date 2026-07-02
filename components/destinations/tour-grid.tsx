@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Clock, ShieldCheck, Users } from "lucide-react";
+import { ArrowRight, Clock, PlaneTakeoff, ShieldCheck, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,7 +42,10 @@ export function TourGrid({
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {tours.map((tour) => (
             <SectionReveal key={tour.id}>
-              <Card className="group flex h-full overflow-hidden">
+              <Card className="group travel-card flex h-full overflow-hidden transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_26px_80px_-42px_rgba(15,23,42,0.55)]">
+                <span className="travel-icon" aria-hidden="true">
+                  <PlaneTakeoff className="size-4" aria-hidden />
+                </span>
                 <div className="flex w-full flex-col">
               <div className="relative aspect-[4/3] overflow-hidden">
                 <Image

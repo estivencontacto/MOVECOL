@@ -16,6 +16,7 @@ import {
   CreditCard,
   Headphones,
   MapPin,
+  PlaneTakeoff,
   Search,
   ShieldCheck,
   Star,
@@ -541,10 +542,13 @@ export function LandingPage() {
                           onClick={() => setActiveCitySlug(city.slug)}
                           className={
                             isActive
-                              ? "flex min-h-[78px] items-center gap-3 rounded-md border border-foreground bg-foreground p-2 text-left text-background shadow-md transition duration-300"
-                              : "flex min-h-[78px] items-center gap-3 rounded-md border bg-white p-2 text-left text-foreground transition duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm"
+                              ? "travel-card flex min-h-[78px] items-center gap-3 overflow-hidden rounded-md border border-foreground bg-foreground p-2 text-left text-background shadow-md transition duration-300"
+                              : "travel-card flex min-h-[78px] items-center gap-3 overflow-hidden rounded-md border bg-white p-2 text-left text-foreground transition duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm"
                           }
                         >
+                          <span className="travel-icon" aria-hidden="true">
+                            <PlaneTakeoff className="size-4" aria-hidden />
+                          </span>
                           <span className="relative h-12 w-14 shrink-0 overflow-hidden rounded-md">
                             <Image
                               src={cityDetails.heroImage}
@@ -651,7 +655,10 @@ export function LandingPage() {
           <SectionHeader eyebrow={t.featured} title={t.featuredTitle} description={t.featuredDescription} />
           <div className="mt-10 grid gap-5 lg:grid-cols-2">
             {cities.map((city) => (
-              <Link key={city.id} href={`/destinos/${city.slug}`} className="group overflow-hidden rounded-2xl border bg-card shadow-sm transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_28px_70px_-36px_rgba(15,23,42,0.55)]">
+              <Link key={city.id} href={`/destinos/${city.slug}`} className="group travel-card overflow-hidden rounded-2xl border bg-card shadow-sm transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_28px_70px_-36px_rgba(15,23,42,0.55)]">
+                <span className="travel-icon" aria-hidden="true">
+                  <PlaneTakeoff className="size-4" aria-hidden />
+                </span>
                 <div className="relative aspect-[16/11]">
                   <Image
                     src={city.image}
@@ -693,7 +700,10 @@ export function LandingPage() {
               const serviceImage = getLandingServiceImage(service.id, activeCity.slug);
               return (
                 <SectionReveal key={service.id}>
-                  <Link href={`/servicios/${service.slug}`} className="group relative block h-full overflow-hidden rounded-lg border bg-card shadow-sm transition duration-300 hover:-translate-y-1.5 hover:bg-white hover:shadow-[0_24px_70px_-38px_rgba(15,23,42,0.45)]">
+                  <Link href={`/servicios/${service.slug}`} className="group travel-card relative block h-full overflow-hidden rounded-lg border bg-card shadow-sm transition duration-300 hover:-translate-y-1.5 hover:bg-white hover:shadow-[0_24px_70px_-38px_rgba(15,23,42,0.45)]">
+                    <span className="travel-icon" aria-hidden="true">
+                      <PlaneTakeoff className="size-4" aria-hidden />
+                    </span>
                     <div className="relative aspect-[16/10]">
                       <Image src={serviceImage} alt={service.title} fill className="object-cover transition duration-500 group-hover:scale-105" />
                     </div>
@@ -727,9 +737,12 @@ export function LandingPage() {
           </div>
           <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {mostBookedTours.map((tour) => (
-              <Card key={tour.id} className="overflow-hidden rounded-lg transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_26px_80px_-42px_rgba(15,23,42,0.55)]">
+              <Card key={tour.id} className="group travel-card overflow-hidden rounded-lg transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_26px_80px_-42px_rgba(15,23,42,0.55)]">
+                <span className="travel-icon" aria-hidden="true">
+                  <PlaneTakeoff className="size-4" aria-hidden />
+                </span>
                 <div className="relative aspect-[16/11] overflow-hidden">
-                  <Image src={getLandingTourImage(tour, activeCity.slug)} alt={tour.name} fill className="object-cover transition duration-500 hover:scale-105" />
+                  <Image src={getLandingTourImage(tour, activeCity.slug)} alt={tour.name} fill className="object-cover transition duration-500 group-hover:scale-105" />
                   <Badge className="absolute left-4 top-4 rounded-md bg-foreground text-background">{activeCity.name}</Badge>
                 </div>
                 <CardHeader>
