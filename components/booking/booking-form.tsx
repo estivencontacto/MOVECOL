@@ -166,6 +166,7 @@ export function BookingForm() {
       dropoff: "",
       originPlaceId: "",
       destinationPlaceId: "",
+      promoCode: "",
       notes: "",
       vehicleType: "suv",
       customer: {
@@ -186,6 +187,7 @@ export function BookingForm() {
   const dropoff = form.watch("dropoff");
   const originPlaceId = form.watch("originPlaceId");
   const destinationPlaceId = form.watch("destinationPlaceId");
+  const promoCode = form.watch("promoCode");
   const date = form.watch("date");
   const time = form.watch("time");
   const isDistanceService = serviceId === "airport-transfer" || serviceId === "transfers";
@@ -213,6 +215,7 @@ export function BookingForm() {
     const dateParam = params.get("date");
     const timeParam = params.get("time");
     const passengersParam = params.get("passengers");
+    const promoParam = params.get("promo");
     const city = cities.find((item) => item.slug === cityParam || item.id === cityParam);
     const tour = tours.find((item) => item.id === tourParam || item.slug === tourParam);
     const service = services.find((item) => item.id === serviceParam || item.slug === serviceParam);
@@ -246,6 +249,10 @@ export function BookingForm() {
         form.setValue("passengers", Math.max(2, passengers));
       }
     }
+
+    if (promoParam === "upsell5") {
+      form.setValue("promoCode", promoParam);
+    }
   }, [form]);
 
   const estimatedTotal = useMemo(() => {
@@ -256,9 +263,10 @@ export function BookingForm() {
       vehicleType,
       passengers,
       hours,
-      distanceKm
+      distanceKm,
+      promoCode
     });
-  }, [cityId, selectedTour?.id, serviceId, vehicleType, passengers, hours, distanceKm]);
+  }, [cityId, selectedTour?.id, serviceId, vehicleType, passengers, hours, distanceKm, promoCode]);
 
   const mutation = useMutation({
     mutationFn: async (payload: ReservationInput) => {
@@ -354,6 +362,7 @@ export function BookingForm() {
     >
       <input type="hidden" {...form.register("originPlaceId")} />
       <input type="hidden" {...form.register("destinationPlaceId")} />
+      <input type="hidden" {...form.register("promoCode")} />
       <input type="hidden" {...form.register("passengers", { valueAsNumber: true })} />
       <input type="hidden" {...form.register("vehicleType")} />
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
@@ -644,6 +653,11 @@ export function BookingForm() {
               ) : null}
               <SummaryRow label={b.vehicle} value={selectedVehicle?.name ?? "-"} />
               <SummaryRow label={b.capacity} value={`${selectedVehicle?.capacity ?? 0} ${language === "EN" ? "passengers" : "pasajeros"}`} />
+              {promoCode === "upsell5" ? (
+                <p className="rounded-md bg-secondary px-3 py-2 text-xs font-semibold text-secondary-foreground">
+                  {language === "EN" ? "Upsell discount applied: 5%" : "Descuento upsell aplicado: 5%"}
+                </p>
+              ) : null}
               <VehicleSelector
                 value={vehicleType}
                 onChange={(value) => {
@@ -739,6 +753,7 @@ function formatBreakdownLabel(label: string, language: "ES" | "EN") {
 
   const labels: Record<string, string> = {
     "Precio del servicio": "Service price",
+    "Descuento upsell (5%)": "Upsell discount (5%)",
     "Uso pasarela de pago (5%)": "Payment gateway fee (5%)"
   };
 

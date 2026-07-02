@@ -14,6 +14,7 @@ export const reservationSchema = z.object({
   dropoff: z.string().min(4, "Indica el destino"),
   originPlaceId: z.string().trim().optional(),
   destinationPlaceId: z.string().trim().optional(),
+  promoCode: z.string().trim().max(40).optional(),
   notes: z.string().max(800).optional(),
   vehicleType: z.enum(["sedan", "suv", "van", "bus"]),
   customer: z.object({

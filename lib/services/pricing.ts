@@ -6,6 +6,8 @@ const COP_PER_KM = 4500;
 const COP_PER_HOUR = 45000;
 const AIRPORT_BASE_COP = 30000;
 const PAYMENT_GATEWAY_RATE = 0.05;
+const UPSELL_PROMO_CODE = "upsell5";
+const UPSELL_DISCOUNT_RATE = 0.05;
 const MINIMUM_BY_CITY: Record<string, number> = {
   bogota: 40000,
   medellin: 150000
@@ -21,7 +23,10 @@ export type PriceEstimate = {
 };
 
 export function estimateReservationPricing(
-  input: Pick<ReservationInput, "cityId" | "serviceId" | "tourId" | "vehicleType" | "distanceKm" | "hours" | "passengers">
+  input: Pick<
+    ReservationInput,
+    "cityId" | "serviceId" | "tourId" | "vehicleType" | "distanceKm" | "hours" | "passengers" | "promoCode"
+  >
 ): PriceEstimate {
   const tour = input.tourId ? tours.find((item) => item.id === input.tourId) : null;
   const requiresAvailabilityCheck = input.vehicleType === "van" || input.vehicleType === "bus";
@@ -32,7 +37,8 @@ export function estimateReservationPricing(
     const surcharge = getVehicleSurcharge(input.vehicleType);
     return withGatewayFee({
       subtotal: tourPrice + surcharge,
-      requiresAvailabilityCheck
+      requiresAvailabilityCheck,
+      promoCode: input.promoCode
     });
   }
 
@@ -42,7 +48,8 @@ export function estimateReservationPricing(
     const surcharge = getVehicleSurcharge(input.vehicleType);
     return withGatewayFee({
       subtotal: base + surcharge,
-      requiresAvailabilityCheck
+      requiresAvailabilityCheck,
+      promoCode: input.promoCode
     });
   }
 
@@ -51,19 +58,24 @@ export function estimateReservationPricing(
       cityId: input.cityId,
       serviceId: input.serviceId,
       vehicleType: input.vehicleType,
-      distanceKm: input.distanceKm ?? 0
+      distanceKm: input.distanceKm ?? 0,
+      promoCode: input.promoCode
     });
   }
 
   const surcharge = getVehicleSurcharge(input.vehicleType);
   return withGatewayFee({
     subtotal: 280000 + surcharge,
-    requiresAvailabilityCheck
+    requiresAvailabilityCheck,
+    promoCode: input.promoCode
   });
 }
 
 export function estimateReservationAmount(
-  input: Pick<ReservationInput, "cityId" | "serviceId" | "tourId" | "vehicleType" | "distanceKm" | "hours" | "passengers">
+  input: Pick<
+    ReservationInput,
+    "cityId" | "serviceId" | "tourId" | "vehicleType" | "distanceKm" | "hours" | "passengers" | "promoCode"
+  >
 ) {
   return estimateReservationPricing(input).amount;
 }
@@ -72,12 +84,14 @@ export function estimateDistancePricing({
   cityId,
   serviceId,
   vehicleType,
-  distanceKm
+  distanceKm,
+  promoCode
 }: {
   cityId: string;
   serviceId: string;
   vehicleType: VehicleType;
   distanceKm: number;
+  promoCode?: string;
 }): PriceEstimate {
   const distanceAmount = Math.ceil(distanceKm) * COP_PER_KM;
   const airportBase = serviceId === "airport-transfer" && cityId === "bogota" ? AIRPORT_BASE_COP : 0;
@@ -89,7 +103,8 @@ export function estimateDistancePricing({
 
   return withGatewayFee({
     subtotal,
-    requiresAvailabilityCheck: vehicleType === "van" || vehicleType === "bus"
+    requiresAvailabilityCheck: vehicleType === "van" || vehicleType === "bus",
+    promoCode
   });
 }
 
@@ -103,21 +118,33 @@ function getVehicleSurcharge(vehicleType: VehicleType) {
 
 function withGatewayFee({
   subtotal,
-  requiresAvailabilityCheck
+  requiresAvailabilityCheck,
+  promoCode
 }: {
   subtotal: number;
   requiresAvailabilityCheck: boolean;
+  promoCode?: string;
 }): PriceEstimate {
-  const gatewayFee = Math.ceil(subtotal * PAYMENT_GATEWAY_RATE);
+  const discount = getPromoDiscount(subtotal, promoCode);
+  const discountedSubtotal = subtotal - discount;
+  const gatewayFee = Math.ceil(discountedSubtotal * PAYMENT_GATEWAY_RATE);
+  const breakdown = [
+    { label: "Precio del servicio", amount: subtotal },
+    ...(discount > 0 ? [{ label: "Descuento upsell (5%)", amount: -discount }] : []),
+    { label: "Uso pasarela de pago (5%)", amount: gatewayFee }
+  ];
 
   return {
-    amount: subtotal + gatewayFee,
-    subtotal,
+    amount: discountedSubtotal + gatewayFee,
+    subtotal: discountedSubtotal,
     gatewayFee,
     requiresAvailabilityCheck,
-    breakdown: [
-      { label: "Precio del servicio", amount: subtotal },
-      { label: "Uso pasarela de pago (5%)", amount: gatewayFee }
-    ]
+    breakdown
   };
+}
+
+function getPromoDiscount(subtotal: number, promoCode?: string) {
+  if (promoCode !== UPSELL_PROMO_CODE) return 0;
+
+  return Math.floor(subtotal * UPSELL_DISCOUNT_RATE);
 }

@@ -84,12 +84,15 @@ El sistema espera que la referencia de Wompi sea el `reservationId`. Esa referen
 https://movecolombia.co/pago-exitoso?reservation=<reservationId>
 ```
 
+Wompi agrega el parametro `id` de la transaccion a esa URL. La pantalla de pago exitoso consulta la API de Wompi con ese `id`, cruza la respuesta contra la reserva usando `transaction.reference` y sincroniza el pago.
+
 7. Wompi envia webhook al backend.
-8. El backend valida la firma con `WOMPI_EVENTS_SECRET`.
+8. El backend valida `X-Event-Checksum` o `signature.checksum` con `WOMPI_EVENTS_SECRET`.
 9. El backend compara `expected_amount_cents` contra `transaction.amount_in_cents`.
 10. Si el pago esta aprobado, la reserva pasa a `confirmed`.
 11. El sistema envia correo de confirmacion al cliente con los datos de la reserva.
 12. La pantalla de pago exitoso muestra resumen de la reserva y un upsell relacionado.
+13. El upsell usa `promo=upsell5`; si el cliente lo reserva, se aplica 5% real antes de calcular la comision de pasarela.
 
 ## 6. Pruebas antes de produccion
 
@@ -121,4 +124,3 @@ https://movecolombia.co/pago-exitoso?reservation=<reservationId>
 - El webhook no bloquea automaticamente una reserva por diferencia de monto, pero deja `console.error` con los valores para revision manual.
 - El checkout intenta usar el monto esperado guardado en Supabase.
 - Los endpoints publicos tienen rate limit basico.
-

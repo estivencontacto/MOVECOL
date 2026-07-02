@@ -6,7 +6,7 @@ import { createReservation } from "@/lib/services/reservations";
 import { enforceRateLimit } from "@/lib/services/rate-limit";
 import { buildDepartureAt, getRouteEstimateResult } from "@/lib/services/routes";
 import { queueWhatsappConfirmation } from "@/lib/services/whatsapp";
-import { buildWompiCheckoutUrl } from "@/lib/wompi";
+import { buildWompiCheckoutUrl, isWompiCheckoutConfigured } from "@/lib/wompi";
 
 export async function POST(request: Request) {
   const limited = enforceRateLimit(request, {
@@ -47,11 +47,30 @@ export async function POST(request: Request) {
       );
     }
 
+    if (!isWompiCheckoutConfigured()) {
+      return NextResponse.json(
+        { error: "La pasarela de pagos no esta configurada. Intenta de nuevo mas tarde." },
+        { status: 503 }
+      );
+    }
+
     const reservation = await createReservation(reservationInput);
     const checkoutUrl = await buildWompiCheckoutUrl({
       reservationId: reservation.id,
-      amountInCents: reservation.expectedAmountCents
+      amountInCents: reservation.expectedAmountCents,
+      customer: {
+        email: reservationInput.customer.email,
+        fullName: reservationInput.customer.fullName,
+        phone: reservationInput.customer.phone
+      }
     });
+
+    if (!checkoutUrl) {
+      return NextResponse.json(
+        { error: "La pasarela de pagos no esta configurada. Intenta de nuevo mas tarde." },
+        { status: 503 }
+      );
+    }
 
     await Promise.all([
       sendReservationEmail(reservationInput, reservation.id),

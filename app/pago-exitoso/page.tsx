@@ -4,12 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cities, services, tours } from "@/lib/data/catalog";
 import { isSupabaseAdminConfigured } from "@/lib/env";
+import { syncWompiTransactionPayment } from "@/lib/services/payments";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getWompiTransaction } from "@/lib/wompi";
+import type { WompiTransaction } from "@/lib/wompi";
 
 export const dynamic = "force-dynamic";
 
 type Props = {
-  searchParams: Promise<{ reservation?: string }>;
+  searchParams: Promise<{ id?: string; reservation?: string }>;
 };
 
 type ReservationSuccess = {
@@ -27,13 +30,16 @@ type ReservationSuccess = {
 };
 
 export default async function PaymentSuccessPage({ searchParams }: Props) {
-  const { reservation: reservationId } = await searchParams;
+  const { id: transactionId, reservation: reservationParam } = await searchParams;
+  const transaction = transactionId ? await resolveWompiTransaction(transactionId) : null;
+  const reservationId = transaction?.reference ?? reservationParam;
   const reservation = reservationId ? await getReservation(reservationId) : null;
   const city = reservation ? cities.find((item) => item.id === reservation.city_id) : null;
   const service = reservation ? services.find((item) => item.id === reservation.service_id) : null;
   const tour = reservation?.tour_id ? tours.find((item) => item.id === reservation.tour_id) : null;
-  const upsell = reservation && city ? getUpsell(reservation, city.slug) : null;
   const isConfirmed = reservation?.status === "confirmed";
+  const upsell = isConfirmed && reservation && city ? getUpsell(reservation, city.slug) : null;
+  const paymentStatusLabel = formatWompiStatus(transaction?.status);
 
   return (
     <main className="min-h-screen bg-muted/35 py-16">
@@ -58,12 +64,14 @@ export default async function PaymentSuccessPage({ searchParams }: Props) {
             <CardContent className="grid gap-4 p-6 md:grid-cols-2">
               <SummaryItem label="Reserva" value={reservation?.id ?? "No disponible"} />
               <SummaryItem label="Estado" value={formatStatus(reservation?.status)} />
+              <SummaryItem label="Transaccion Wompi" value={transaction?.id ?? transactionId ?? "No disponible"} />
+              <SummaryItem label="Estado Wompi" value={paymentStatusLabel} />
               <SummaryItem label="Ciudad" value={city?.name ?? reservation?.city_id ?? "-"} />
               <SummaryItem label="Servicio" value={service?.title ?? reservation?.service_id ?? "-"} />
               <SummaryItem label="Tour" value={tour?.name ?? "No aplica"} />
               <SummaryItem
                 label="Fecha y hora"
-                value={reservation ? `${reservation.reservation_date} · ${reservation.reservation_time}` : "-"}
+                value={reservation ? `${reservation.reservation_date} - ${reservation.reservation_time}` : "-"}
               />
               <SummaryItem label="Pasajeros" value={reservation ? String(reservation.passengers) : "-"} />
               <SummaryItem
@@ -112,6 +120,18 @@ export default async function PaymentSuccessPage({ searchParams }: Props) {
       </div>
     </main>
   );
+}
+
+async function resolveWompiTransaction(transactionId: string) {
+  const transaction = await getWompiTransaction(transactionId);
+
+  if (!transaction) return null;
+
+  if (isSupabaseAdminConfigured() && transaction.reference) {
+    await syncWompiTransactionPayment(transaction);
+  }
+
+  return transaction;
 }
 
 async function getReservation(reservationId: string) {
@@ -172,6 +192,15 @@ function formatStatus(status?: string) {
   if (status === "confirmed") return "Confirmada";
   if (status === "pending_payment") return "Pendiente de pago";
   if (status === "cancelled") return "Cancelada";
+  return status ?? "No disponible";
+}
+
+function formatWompiStatus(status?: WompiTransaction["status"]) {
+  if (status === "APPROVED") return "Aprobado";
+  if (status === "DECLINED") return "Rechazado";
+  if (status === "VOIDED") return "Anulado";
+  if (status === "ERROR") return "Error";
+  if (status === "PENDING") return "Pendiente";
   return status ?? "No disponible";
 }
 
