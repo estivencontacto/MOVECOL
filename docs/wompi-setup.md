@@ -42,7 +42,7 @@ Notas importantes:
 - `WOMPI_INTEGRITY_SECRET` firma el checkout para que el monto no se manipule.
 - `WOMPI_EVENTS_SECRET` valida webhooks. Si falta, el webhook se rechaza por seguridad.
 - `SUPABASE_SECRET_KEY` nunca va al frontend. Solo se usa del lado servidor.
-- `SUPABASE_JWKS_URL` permite verificar JWTs de usuario con `@supabase/server`.
+- `SUPABASE_JWKS_URL` permite verificar JWTs de usuario con `@supabase/server`; si falta, el servidor lo deriva desde `SUPABASE_URL`.
 - `NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY` es necesaria para autocompletado y minimapas visibles.
 
 ## 3. Aplicar la migracion de Supabase

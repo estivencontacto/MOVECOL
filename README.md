@@ -117,7 +117,8 @@ USD_COP_FALLBACK_RATE=4000
 
 `SUPABASE_SECRET_KEY` reemplaza al antiguo `SUPABASE_SERVICE_ROLE_KEY` para
 operaciones administrativas del servidor. Nunca lo expongas en el navegador ni
-lo subas al repositorio.
+lo subas al repositorio. `SUPABASE_JWKS_URL` es recomendado para verificacion
+JWT; si falta, el servidor lo deriva desde `SUPABASE_URL`.
 
 ## Base De Datos
 
