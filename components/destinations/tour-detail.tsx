@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import {
+  Activity,
   ArrowRight,
   CalendarDays,
   Clock,
@@ -19,8 +20,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
 import { TourGrid } from "@/components/destinations/tour-grid";
+import { TourRoutePreviewMap } from "@/components/destinations/tour-route-preview-map";
 import { Price } from "@/components/preferences/site-preferences";
 import { TourConditionBanner } from "@/components/weather/tour-condition-banner";
+import { getTourRoutePreview } from "@/lib/data/tour-route-previews";
 import { getTourPhysicalDemand, getTourPrimaryRecommendation } from "@/lib/data/tour-insights";
 import type { City, Tour } from "@/lib/domain/types";
 import { breadcrumbSchema, jsonLd, tourSchema } from "@/lib/seo";
@@ -40,6 +43,9 @@ export function TourDetail({
   const heroImage = tour.heroImage ?? tour.gallery[0];
   const galleryImages = Array.from(new Set([heroImage, ...tour.gallery])).filter(Boolean);
   const scheduleLabel = tour.schedules.join(" / ");
+  const primaryRecommendation = getTourPrimaryRecommendation(tour);
+  const physicalDemand = getTourPhysicalDemand(tour);
+  const routePreview = getTourRoutePreview(city.slug, tour.slug, tour.name);
   const priceLabel =
     tour.pricingMode === "global" ? "Tarifa global del servicio" : "Tarifa por persona, minimo 2 pasajeros";
 
@@ -88,10 +94,11 @@ export function TourDetail({
             <p className="mt-5 max-w-2xl text-lg leading-8 text-primary-foreground/84">
               {tour.description}
             </p>
-            <div className="mt-8 grid max-w-2xl gap-3 sm:grid-cols-3">
+            <div className="mt-8 grid max-w-3xl gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <HeroFact icon={Clock} label="Duracion" value={tour.duration} />
               <HeroFact icon={CalendarDays} label="Salidas" value={scheduleLabel} />
               <HeroFact icon={Users} label="Viajeros" value={`Min. ${tour.minimumPassengers ?? 2}`} />
+              <HeroFact icon={Activity} label="Exigencia fisica" value={physicalDemand} />
             </div>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg">
@@ -129,13 +136,15 @@ export function TourDetail({
       <TourConditionBanner
         citySlug={city.slug}
         duration={tour.duration}
-        recommendation={getTourPrimaryRecommendation(tour)}
-        physicalDemand={getTourPhysicalDemand(tour)}
+        recommendation={primaryRecommendation}
+        physicalDemand={physicalDemand}
       />
 
       <section className="section">
         <div className="container grid gap-10 lg:grid-cols-[1fr_0.42fr]">
           <div className="space-y-12">
+            <TourRoutePreviewMap citySlug={city.slug} route={routePreview} />
+
             <div>
               <p className="eyebrow">Experiencia</p>
               <h2 className="mt-3 text-3xl font-semibold md:text-4xl">

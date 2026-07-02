@@ -446,6 +446,31 @@ export function LandingPage() {
               </motion.div>
               <motion.div
                 variants={heroItem}
+                className="mt-6 max-w-3xl rounded-lg border border-white/[0.16] bg-black/25 p-3 shadow-[0_24px_80px_-52px_rgba(0,0,0,0.8)] backdrop-blur-md"
+              >
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <p className="text-xs font-bold uppercase tracking-wide text-white/68">
+                    {language === "EN" ? "Live city context" : "Datos actuales de la ciudad"}
+                  </p>
+                  <span className="rounded-full bg-white/12 px-3 py-1 text-xs font-semibold text-white">
+                    {activeCity.name}
+                  </span>
+                </div>
+                <CityWeatherSummary
+                  citySlug={activeCity.slug}
+                  language={language}
+                  labels={{
+                    weather: t.weather,
+                    localTime: t.localTime,
+                    altitude: t.altitude,
+                    loading: t.weatherLoading,
+                    unavailable: t.weatherUnavailable
+                  }}
+                  variant="dark"
+                />
+              </motion.div>
+              <motion.div
+                variants={heroItem}
                 className="mt-7 max-w-2xl rounded-lg border border-white/[0.16] bg-white/[0.10] p-3 shadow-[0_22px_80px_-50px_rgba(0,0,0,0.75)] backdrop-blur-md"
               >
                 <div className="mb-3 flex items-center justify-between gap-3 text-white">

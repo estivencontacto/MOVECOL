@@ -53,6 +53,9 @@ reutilizables y paginas generadas automaticamente para tours y servicios.
 
 Ver [docs/architecture.md](docs/architecture.md).
 
+Para configurar pagos reales con Wompi, webhooks, confirmacion de reservas y correos:
+[docs/wompi-setup.md](docs/wompi-setup.md).
+
 El proyecto separa paginas publicas, flujo de reserva, administracion, esquemas
 de dominio, servicios de aplicacion, infraestructura Supabase y migraciones de
 base de datos.
