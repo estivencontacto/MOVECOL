@@ -32,56 +32,64 @@ const routePricingSchema = z.object({
 });
 
 export async function POST(request: Request) {
-  const payload = await request.json();
-  const parsed = routePricingSchema.safeParse(payload);
+  try {
+    const payload = await request.json();
+    const parsed = routePricingSchema.safeParse(payload);
 
-  if (!parsed.success) {
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Datos invalidos para calcular la ruta", issues: parsed.error.flatten() },
+        { status: 422 }
+      );
+    }
+
+    if (parsed.data.serviceId !== "airport-transfer" && parsed.data.serviceId !== "transfers") {
+      return NextResponse.json(
+        { error: "El servicio seleccionado no se liquida por ruta." },
+        { status: 422 }
+      );
+    }
+
+    const result = await getRouteEstimateResult({
+      origin: parsed.data.origin ?? "",
+      destination: parsed.data.destination ?? "",
+      originPlaceId: parsed.data.originPlaceId,
+      destinationPlaceId: parsed.data.destinationPlaceId,
+      departureAt: parsed.data.departureAt
+    });
+
+    if (!result.ok) {
+      return NextResponse.json(
+        {
+          error: result.error.message,
+          code: result.error.code,
+          googleStatus: result.error.googleStatus
+        },
+        { status: getRouteErrorStatus(result.error.code) }
+      );
+    }
+
+    const pricing = estimateDistancePricing({
+      cityId: parsed.data.cityId,
+      serviceId: parsed.data.serviceId,
+      vehicleType: parsed.data.vehicleType,
+      distanceKm: result.route.distanceKm
+    });
+
+    return NextResponse.json({
+      distanceKm: result.route.distanceKm,
+      durationText: result.route.durationText,
+      originAddress: result.route.originAddress,
+      destinationAddress: result.route.destinationAddress,
+      ...pricing
+    });
+  } catch (error) {
+    console.error("Route pricing failed", error);
     return NextResponse.json(
-      { error: "Datos invalidos para calcular la ruta", issues: parsed.error.flatten() },
-      { status: 422 }
+      { error: "No pudimos calcular la ruta, intenta de nuevo" },
+      { status: 500 }
     );
   }
-
-  if (parsed.data.serviceId !== "airport-transfer" && parsed.data.serviceId !== "transfers") {
-    return NextResponse.json(
-      { error: "El servicio seleccionado no se liquida por ruta." },
-      { status: 422 }
-    );
-  }
-
-  const result = await getRouteEstimateResult({
-    origin: parsed.data.origin ?? "",
-    destination: parsed.data.destination ?? "",
-    originPlaceId: parsed.data.originPlaceId,
-    destinationPlaceId: parsed.data.destinationPlaceId,
-    departureAt: parsed.data.departureAt
-  });
-
-  if (!result.ok) {
-    return NextResponse.json(
-      {
-        error: result.error.message,
-        code: result.error.code,
-        googleStatus: result.error.googleStatus
-      },
-      { status: getRouteErrorStatus(result.error.code) }
-    );
-  }
-
-  const pricing = estimateDistancePricing({
-    cityId: parsed.data.cityId,
-    serviceId: parsed.data.serviceId,
-    vehicleType: parsed.data.vehicleType,
-    distanceKm: result.route.distanceKm
-  });
-
-  return NextResponse.json({
-    distanceKm: result.route.distanceKm,
-    durationText: result.route.durationText,
-    originAddress: result.route.originAddress,
-    destinationAddress: result.route.destinationAddress,
-    ...pricing
-  });
 }
 
 function getRouteErrorStatus(code: RouteEstimateErrorCode) {

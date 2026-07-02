@@ -11,7 +11,8 @@ import { createClient } from "@/lib/supabase/client";
 
 export function LoginForm() {
   const params = useSearchParams();
-  const redirect = params.get("redirect") ?? "/admin";
+  const redirectParam = params.get("redirect");
+  const redirect = redirectParam?.startsWith("/") && !redirectParam.startsWith("//") ? redirectParam : "/admin";
   const [isLoading, setIsLoading] = useState(false);
 
   async function onSubmit(formData: FormData) {

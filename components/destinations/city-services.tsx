@@ -15,6 +15,7 @@ import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { SectionReveal } from "@/components/sections/section-reveal";
 import { serviceAssetsByCity } from "@/lib/data/catalog";
 import type { Service } from "@/lib/domain/types";
 
@@ -72,17 +73,19 @@ export function CityServices({
   return (
     <section className="section bg-muted/55">
       <div className="container">
-        <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div className="max-w-3xl">
-            <p className="eyebrow">Servicios</p>
-            <h2 className="mt-3 text-3xl font-semibold md:text-4xl">{copy.title}</h2>
-            <p className="mt-4 leading-7 text-muted-foreground">{copy.description}</p>
+        <SectionReveal>
+          <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-3xl">
+              <p className="eyebrow">Servicios</p>
+              <h2 className="mt-3 text-3xl font-semibold md:text-4xl">{copy.title}</h2>
+              <p className="mt-4 leading-7 text-muted-foreground">{copy.description}</p>
+            </div>
+            <Badge className="w-fit bg-secondary text-secondary-foreground">
+              <ShieldCheck className="mr-2 size-3" aria-hidden />
+              Coordinacion MOVE
+            </Badge>
           </div>
-          <Badge className="w-fit bg-secondary text-secondary-foreground">
-            <ShieldCheck className="mr-2 size-3" aria-hidden />
-            Coordinacion MOVE
-          </Badge>
-        </div>
+        </SectionReveal>
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {services.map((service) => {
             const Icon = serviceIcons[service.id] ?? Car;
@@ -91,8 +94,9 @@ export function CityServices({
               serviceAssetsByCity[citySlug]?.[service.id]?.hero;
 
             return (
-              <Card key={service.id} className="group flex h-full overflow-hidden">
-                <div className="flex w-full flex-col">
+              <SectionReveal key={service.id}>
+                <Card className="group flex h-full overflow-hidden">
+                  <div className="flex w-full flex-col">
                   {image ? (
                     <div className="relative aspect-[16/10] overflow-hidden">
                       <Image
@@ -126,8 +130,9 @@ export function CityServices({
                       </Link>
                     </Button>
                   </CardContent>
-                </div>
-              </Card>
+                  </div>
+                </Card>
+              </SectionReveal>
             );
           })}
         </div>

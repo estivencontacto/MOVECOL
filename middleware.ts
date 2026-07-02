@@ -13,7 +13,18 @@ export async function middleware(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
+  const isAdminPath = request.nextUrl.pathname.startsWith("/admin");
+  const isConfigErrorPath = request.nextUrl.pathname === "/admin/config-error";
+
   if (!supabaseUrl || !supabaseAnonKey) {
+    if (isAdminPath && !isConfigErrorPath) {
+      console.error("Admin request blocked: Supabase public env vars are not configured.");
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin/config-error";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+
     return response;
   }
 
@@ -36,14 +47,14 @@ export async function middleware(request: NextRequest) {
     data: { user }
   } = await supabase.auth.getUser();
 
-  if (request.nextUrl.pathname.startsWith("/admin") && !user) {
+  if (isAdminPath && !user) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("redirect", request.nextUrl.pathname);
     return NextResponse.redirect(url);
   }
 
-  if (request.nextUrl.pathname.startsWith("/admin") && user) {
+  if (isAdminPath && user) {
     const { data: profile } = await supabase
       .from("users")
       .select("role")

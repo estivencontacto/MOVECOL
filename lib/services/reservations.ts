@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { cities, services, tours, vehicles } from "@/lib/data/catalog";
 import type { ReservationInput } from "@/lib/domain/schemas";
+import { estimateReservationPricing, toCents } from "@/lib/services/pricing";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function createReservation(input: ReservationInput) {
@@ -10,6 +11,8 @@ export async function createReservation(input: ReservationInput) {
   const service = services.find((item) => item.id === input.serviceId);
   const tour = input.tourId ? tours.find((item) => item.id === input.tourId) : null;
   const vehicle = vehicles.find((item) => item.type === input.vehicleType);
+  const pricing = estimateReservationPricing(input);
+  const expectedAmountCents = toCents(pricing.amount);
 
   if (!city || !service || !vehicle) {
     throw new Error("La ciudad, servicio o vehiculo seleccionado no existe");
@@ -46,7 +49,8 @@ export async function createReservation(input: ReservationInput) {
     luggage: input.luggage,
     pickup_address: input.pickup,
     dropoff_address: input.dropoff,
-    notes: input.notes ?? null
+    notes: input.notes ?? null,
+    expected_amount_cents: expectedAmountCents
   });
 
   if (reservationError) {
@@ -58,6 +62,8 @@ export async function createReservation(input: ReservationInput) {
     city,
     service,
     tour,
-    vehicle
+    vehicle,
+    expectedAmountCents,
+    pricing
   };
 }

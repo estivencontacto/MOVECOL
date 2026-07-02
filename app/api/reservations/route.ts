@@ -2,13 +2,21 @@ import { NextResponse } from "next/server";
 import { reservationSchema, type ReservationInput } from "@/lib/domain/schemas";
 import { isSupabaseAdminConfigured } from "@/lib/env";
 import { sendReservationEmail } from "@/lib/services/email";
-import { estimateReservationAmount, toCents } from "@/lib/services/pricing";
 import { createReservation } from "@/lib/services/reservations";
+import { enforceRateLimit } from "@/lib/services/rate-limit";
 import { buildDepartureAt, getRouteEstimateResult } from "@/lib/services/routes";
 import { queueWhatsappConfirmation } from "@/lib/services/whatsapp";
 import { buildWompiCheckoutUrl } from "@/lib/wompi";
 
 export async function POST(request: Request) {
+  const limited = enforceRateLimit(request, {
+    key: "reservations",
+    limit: 6,
+    windowMs: 60_000
+  });
+
+  if (limited) return limited;
+
   const json = await request.json();
   const parsed = reservationSchema.safeParse(json);
 
@@ -40,10 +48,9 @@ export async function POST(request: Request) {
     }
 
     const reservation = await createReservation(reservationInput);
-    const amount = estimateReservationAmount(reservationInput);
     const checkoutUrl = await buildWompiCheckoutUrl({
       reservationId: reservation.id,
-      amountInCents: toCents(amount)
+      amountInCents: reservation.expectedAmountCents
     });
 
     await Promise.all([
@@ -53,9 +60,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ id: reservation.id, checkoutUrl }, { status: 201 });
   } catch (error) {
-    console.error(error);
+    console.error("Reservation creation failed", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "No fue posible crear la reserva" },
+      { error: "No pudimos procesar tu reserva, intenta de nuevo" },
       { status: 500 }
     );
   }

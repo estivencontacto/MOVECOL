@@ -1,9 +1,6 @@
 import { createHash, createHmac, timingSafeEqual } from "crypto";
 
-const checkoutBaseUrl =
-  process.env.WOMPI_ENV === "production"
-    ? "https://checkout.wompi.co/p/"
-    : "https://checkout.wompi.co/p/";
+const checkoutBaseUrl = "https://checkout.wompi.co/p/";
 
 export async function buildWompiCheckoutUrl({
   reservationId,
@@ -20,7 +17,7 @@ export async function buildWompiCheckoutUrl({
   }
 
   const currency = "COP";
-  const redirectUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://movecolombia.co"}/reservar?reservation=${reservationId}`;
+  const redirectUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://movecolombia.co"}/pago-exitoso?reservation=${reservationId}`;
   const signature = integritySecret
     ? createHash("sha256")
         .update(`${reservationId}${amountInCents}${currency}${integritySecret}`)
@@ -45,7 +42,8 @@ export async function buildWompiCheckoutUrl({
 export function verifyWompiWebhook(rawBody: string, signatureHeader?: string | null) {
   const secret = process.env.WOMPI_EVENTS_SECRET;
   if (!secret) {
-    return true;
+    console.error("Wompi webhook rejected: WOMPI_EVENTS_SECRET is not configured.");
+    return false;
   }
 
   if (!signatureHeader) {

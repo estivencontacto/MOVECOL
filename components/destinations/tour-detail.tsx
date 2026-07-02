@@ -20,6 +20,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
 import { TourGrid } from "@/components/destinations/tour-grid";
 import { Price } from "@/components/preferences/site-preferences";
+import { TourConditionBanner } from "@/components/weather/tour-condition-banner";
+import { getTourPhysicalDemand, getTourPrimaryRecommendation } from "@/lib/data/tour-insights";
 import type { City, Tour } from "@/lib/domain/types";
 import { breadcrumbSchema, jsonLd, tourSchema } from "@/lib/seo";
 
@@ -123,6 +125,13 @@ export function TourDetail({
           </aside>
         </div>
       </section>
+
+      <TourConditionBanner
+        citySlug={city.slug}
+        duration={tour.duration}
+        recommendation={getTourPrimaryRecommendation(tour)}
+        physicalDemand={getTourPhysicalDemand(tour)}
+      />
 
       <section className="section">
         <div className="container grid gap-10 lg:grid-cols-[1fr_0.42fr]">

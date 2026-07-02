@@ -28,10 +28,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
 import { Price, useLanguage } from "@/components/preferences/site-preferences";
 import { SectionReveal } from "@/components/sections/section-reveal";
-import { cities, reviews, serviceAssetsByCity, services, tours, vehicles } from "@/lib/data/catalog";
-
-const unsplashImage = (id: string, width = 1600) =>
-  `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${width}&q=82`;
+import { CityWeatherSummary } from "@/components/weather/city-weather-summary";
+import { cities, localImage, reviews, serviceAssetsByCity, services, tours, vehicles } from "@/lib/data/catalog";
 
 type LandingCityContent = {
   heroImage: string;
@@ -56,7 +54,7 @@ const cityOrder = ["bogota", "medellin"];
 
 const landingCityContent: Record<string, LandingCityContent> = {
   bogota: {
-    heroImage: unsplashImage("photo-1534943441045-1009d7cb0bb9", 2200),
+    heroImage: localImage("/images/BOGOTA/TOURS/CITY TOUR BOGOTA/GALERIA/1.jpg"),
     topTourIds: ["bog-city-tour", "bog-monserrate", "bog-guatavita", "bog-catedral-sal"],
     ES: {
       badge: "Bogota privada",
@@ -80,7 +78,7 @@ const landingCityContent: Record<string, LandingCityContent> = {
     }
   },
   medellin: {
-    heroImage: unsplashImage("photo-1582647509711-c8aa8a8bda71", 2200),
+    heroImage: localImage("/images/MEDELLIN/TOURS/CITY TOUR MEDELLIN/HERO/images (2).jpg"),
     topTourIds: ["med-guatape", "med-comuna-13", "med-city-tour", "med-vuelta-oriente"],
     ES: {
       badge: "Medellin privada",
@@ -105,26 +103,9 @@ const landingCityContent: Record<string, LandingCityContent> = {
   }
 };
 
-const landingTourImages: Record<string, string> = {
-  "bog-city-tour": unsplashImage("photo-1534943441045-1009d7cb0bb9", 900),
-  "bog-monserrate": unsplashImage("photo-1562857557-4ff821b4aa8d", 900),
-  "bog-guatavita": unsplashImage("photo-1500530855697-b586d89ba3ee", 900),
-  "bog-catedral-sal": unsplashImage("photo-1605649487212-47bdab064df7", 900),
-  "med-guatape": unsplashImage("photo-1582647509711-c8aa8a8bda71", 900),
-  "med-comuna-13": unsplashImage("photo-1611148261486-4e315d904232", 900),
-  "med-city-tour": unsplashImage("photo-1582647509711-c8aa8a8bda71", 900),
-  "med-vuelta-oriente": unsplashImage("photo-1500530855697-b586d89ba3ee", 900)
-};
+const landingTourImages: Record<string, string> = {};
 
-const landingServiceImages: Record<string, string> = {
-  "airport-transfer": unsplashImage("photo-1436491865332-7a61a109cc05", 900),
-  transfers: unsplashImage("photo-1534943441045-1009d7cb0bb9", 900),
-  hourly: unsplashImage("photo-1549924231-f129b911e442", 900),
-  "medical-tourism": unsplashImage("photo-1500530855697-b586d89ba3ee", 900),
-  "private-tours": unsplashImage("photo-1562857557-4ff821b4aa8d", 900),
-  corporate: unsplashImage("photo-1549924231-f129b911e442", 900),
-  events: unsplashImage("photo-1534943441045-1009d7cb0bb9", 900)
-};
+const landingServiceImages: Record<string, string> = {};
 
 const text = {
   ES: {
@@ -179,7 +160,12 @@ const text = {
     viewTour: "Ver tour",
     book: "Reservar",
     from: "Desde",
-    duration: "Duracion"
+    duration: "Duracion",
+    weather: "Clima",
+    localTime: "Hora local",
+    altitude: "Altura",
+    weatherLoading: "Consultando",
+    weatherUnavailable: "Clima no disponible"
   },
   EN: {
     badge: "Explore Colombia",
@@ -233,7 +219,12 @@ const text = {
     viewTour: "View tour",
     book: "Book",
     from: "From",
-    duration: "Duration"
+    duration: "Duration",
+    weather: "Weather",
+    localTime: "Local time",
+    altitude: "Altitude",
+    weatherLoading: "Loading",
+    weatherUnavailable: "Weather unavailable"
   }
 };
 
@@ -331,17 +322,23 @@ function getMostBookedTours(citySlug: string, limit = 6) {
   return [...orderedTours, ...fallbackTours].slice(0, limit);
 }
 
-function getLandingTourImage(tourId: string, citySlug: string) {
-  return landingTourImages[tourId] ?? landingCityContent[citySlug]?.heroImage ?? landingCityContent.bogota.heroImage;
+function getLandingTourImage(tour: (typeof tours)[number], citySlug: string) {
+  return (
+    tour.cardImage ??
+    tour.heroImage ??
+    landingTourImages[tour.id] ??
+    landingCityContent[citySlug]?.heroImage ??
+    landingCityContent.bogota.heroImage
+  );
 }
 
 function getLandingServiceImage(serviceId: string, citySlug: string) {
   const catalogAsset = serviceAssetsByCity[citySlug]?.[serviceId];
 
   return (
-    landingServiceImages[serviceId] ??
     catalogAsset?.card ??
     catalogAsset?.hero ??
+    landingServiceImages[serviceId] ??
     landingCityContent[citySlug]?.heroImage ??
     landingCityContent.bogota.heroImage
   );
@@ -467,7 +464,7 @@ export function LandingPage() {
                     >
                       <div className="relative h-16 overflow-hidden rounded-md">
                         <Image
-                          src={getLandingTourImage(tour.id, activeCity.slug)}
+                          src={getLandingTourImage(tour, activeCity.slug)}
                           alt={tour.name}
                           fill
                           className="object-cover transition duration-500 group-hover:scale-105"
@@ -541,6 +538,19 @@ export function LandingPage() {
                         </button>
                       );
                     })}
+                  </div>
+                  <div className="mt-3">
+                    <CityWeatherSummary
+                      citySlug={activeCity.slug}
+                      language={language}
+                      labels={{
+                        weather: t.weather,
+                        localTime: t.localTime,
+                        altitude: t.altitude,
+                        loading: t.weatherLoading,
+                        unavailable: t.weatherUnavailable
+                      }}
+                    />
                   </div>
                 </div>
                 <SearchField icon={Car} label={t.service}>
@@ -694,7 +704,7 @@ export function LandingPage() {
             {mostBookedTours.map((tour) => (
               <Card key={tour.id} className="overflow-hidden rounded-lg transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_26px_80px_-42px_rgba(15,23,42,0.55)]">
                 <div className="relative aspect-[16/11] overflow-hidden">
-                  <Image src={getLandingTourImage(tour.id, activeCity.slug)} alt={tour.name} fill className="object-cover transition duration-500 hover:scale-105" />
+                  <Image src={getLandingTourImage(tour, activeCity.slug)} alt={tour.name} fill className="object-cover transition duration-500 hover:scale-105" />
                   <Badge className="absolute left-4 top-4 rounded-md bg-foreground text-background">{activeCity.name}</Badge>
                 </div>
                 <CardHeader>

@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Price } from "@/components/preferences/site-preferences";
+import { SectionReveal } from "@/components/sections/section-reveal";
 import type { City, Tour } from "@/lib/domain/types";
 
 export function TourGrid({
@@ -25,21 +26,24 @@ export function TourGrid({
   return (
     <section className={muted ? "section bg-muted/55" : "section"}>
       <div className="container">
-        <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div className="max-w-3xl">
-            <p className="eyebrow">{eyebrow}</p>
-            <h2 className="mt-3 text-3xl font-semibold md:text-4xl">{title}</h2>
-            <p className="mt-4 leading-7 text-muted-foreground">{description}</p>
+        <SectionReveal>
+          <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-3xl">
+              <p className="eyebrow">{eyebrow}</p>
+              <h2 className="mt-3 text-3xl font-semibold md:text-4xl">{title}</h2>
+              <p className="mt-4 leading-7 text-muted-foreground">{description}</p>
+            </div>
+            <Badge className="w-fit bg-secondary text-secondary-foreground">
+              <ShieldCheck className="mr-2 size-3" aria-hidden />
+              Operacion privada
+            </Badge>
           </div>
-          <Badge className="w-fit bg-secondary text-secondary-foreground">
-            <ShieldCheck className="mr-2 size-3" aria-hidden />
-            Operacion privada
-          </Badge>
-        </div>
+        </SectionReveal>
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {tours.map((tour) => (
-            <Card key={tour.id} className="group flex h-full overflow-hidden">
-              <div className="flex w-full flex-col">
+            <SectionReveal key={tour.id}>
+              <Card className="group flex h-full overflow-hidden">
+                <div className="flex w-full flex-col">
               <div className="relative aspect-[4/3] overflow-hidden">
                 <Image
                   src={tour.cardImage ?? tour.gallery[0]}
@@ -83,8 +87,9 @@ export function TourGrid({
                   </Button>
                 </div>
               </CardContent>
-              </div>
-            </Card>
+                </div>
+              </Card>
+            </SectionReveal>
           ))}
         </div>
       </div>

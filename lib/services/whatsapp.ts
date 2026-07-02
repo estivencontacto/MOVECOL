@@ -6,8 +6,5 @@ export async function queueWhatsappConfirmation(input: ReservationInput, reserva
     return;
   }
 
-  console.info("WhatsApp confirmation prepared", {
-    reservationId,
-    phone: input.customer.phone
-  });
+  console.info("WhatsApp confirmation prepared", { reservationId });
 }

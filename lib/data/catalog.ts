@@ -1,12 +1,6 @@
 import type { City, Service, Tour, Vehicle } from "@/lib/domain/types";
 
-const image = (id: string, params = "auto=format&fit=crop&w=1600&q=80") =>
-  `https://images.unsplash.com/${id}?${params}`;
-
-const unsplash = (id: string, params = "auto=format&fit=crop&w=1600&q=82") =>
-  `https://images.unsplash.com/${id}?${params}`;
-
-const localImage = (path: string) =>
+export const localImage = (path: string) =>
   path
     .split("/")
     .map((part, index) => (index === 0 ? part : encodeURIComponent(part)))
@@ -72,18 +66,6 @@ export const serviceAssetsByCity: Record<string, Record<string, { hero?: string;
   }
 };
 
-const bogotaImages = {
-  skyline: unsplash("photo-1534943441045-1009d7cb0bb9"),
-  city: unsplash("photo-1720067392108-89b9485aa090"),
-  monserrate: unsplash("photo-1562857557-4ff821b4aa8d"),
-  street: unsplash("photo-1611148261486-4e315d904232"),
-  airport: unsplash("photo-1436491865332-7a61a109cc05"),
-  graffiti: "/images/bogota-graffiti-unsplash.jpg",
-  gold: "https://images.unsplash.com/photo-1605649487212-47bdab064df7?auto=format&fit=crop&w=1600&q=82",
-  nature: unsplash("photo-1500530855697-b586d89ba3ee"),
-  business: unsplash("photo-1549924231-f129b911e442")
-};
-
 export const cities: City[] = [
   {
     id: "medellin",
@@ -95,8 +77,8 @@ export const cities: City[] = [
     description:
       "Traslados, tours culturales, turismo medico y logistica especializada con vehiculos confortables y conductores profesionales.",
     airport: "Aeropuerto Internacional Jose Maria Cordova",
-    image: image("photo-1582647509711-c8aa8a8bda71"),
-    heroImage: image("photo-1582647509711-c8aa8a8bda71"),
+    image: localImage("/images/MEDELLIN/TOURS/CITY TOUR MEDELLIN/HERO/images (2).jpg"),
+    heroImage: localImage("/images/MEDELLIN/TOURS/CITY TOUR MEDELLIN/HERO/images (2).jpg"),
     serviceIds: ["airport-transfer", "transfers", "hourly", "medical-tourism", "private-tours", "corporate"],
     active: true
   },
@@ -110,9 +92,13 @@ export const cities: City[] = [
     description:
       "Traslados desde El Dorado, transporte por horas, turismo medico, tours privados y movilidad corporativa con conductores profesionales.",
     airport: "Aeropuerto Internacional El Dorado",
-    image: bogotaImages.skyline,
-    heroImage: bogotaImages.skyline,
-    heroGallery: [bogotaImages.airport, bogotaImages.monserrate, bogotaImages.business],
+    image: localImage("/images/BOGOTA/TOURS/CITY TOUR BOGOTA/GALERIA/1.jpg"),
+    heroImage: localImage("/images/BOGOTA/TOURS/CITY TOUR BOGOTA/GALERIA/1.jpg"),
+    heroGallery: [
+      localImage("/images/BOGOTA/SERVICIOS/AEROPUERTO EL DORADO/HERO/turismo-en-bogota_-aeropuerto-el-dorado-mejor-conectado-america-latina.png"),
+      localImage("/images/BOGOTA/TOURS/MONSERRATE/HERO/1000_F_580460987_O8r0FPCDN8J0U0CXOnUbguQt4ahTkJDw.jpg"),
+      localImage("/images/BOGOTA/SERVICIOS/TRANSPORTE CORPORATIVO/HERO/17a262cc-796c-424a-87aa-c6dd1300ae66.png")
+    ],
     serviceIds: ["airport-transfer", "transfers", "hourly", "medical-tourism", "private-tours", "corporate"],
     active: true
   }

@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { AlertCircle, CalendarCheck, CheckCircle2, CreditCard, Loader2, MapPinned, Route, UserRound } from "lucide-react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
@@ -36,6 +36,13 @@ type RoutePricingResponse = {
 };
 
 const googleMapsBrowserKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY;
+
+const stepMotion = {
+  initial: { opacity: 0, y: 14 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -10 },
+  transition: { duration: 0.32, ease: "easeOut" }
+};
 
 const bookingCopy = {
   ES: {
@@ -189,6 +196,11 @@ export function BookingForm() {
   const canCalculateRoute = Boolean(
     isDistanceService &&
       !selectedTour &&
+      (originPlaceId || pickup.length >= 4) &&
+      (destinationPlaceId || dropoff.length >= 4)
+  );
+  const canShowMiniMap = Boolean(
+    googleMapsBrowserKey &&
       (originPlaceId || pickup.length >= 4) &&
       (destinationPlaceId || dropoff.length >= 4)
   );
@@ -369,7 +381,8 @@ export function BookingForm() {
             ))}
           </div>
 
-          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35 }}>
+          <AnimatePresence mode="wait">
+          <motion.div key={`route-${cityId}-${serviceId}-${selectedTour?.id ?? "none"}`} {...stepMotion}>
           <Card className="overflow-hidden border-primary/12 shadow-[0_24px_80px_-48px_rgba(15,23,42,0.45)]">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -412,7 +425,7 @@ export function BookingForm() {
                 </Field>
               ) : null}
               <Field label={b.pickup} error={form.formState.errors.pickup?.message}>
-                {isDistanceService && !selectedTour ? (
+                {googleMapsBrowserKey ? (
                   <PlaceAutocompleteInput
                     apiKey={googleMapsBrowserKey}
                     value={pickup}
@@ -433,7 +446,7 @@ export function BookingForm() {
                 )}
               </Field>
               <Field label={b.dropoff} error={form.formState.errors.dropoff?.message}>
-                {isDistanceService && !selectedTour ? (
+                {googleMapsBrowserKey && !selectedTour ? (
                   <PlaceAutocompleteInput
                     apiKey={googleMapsBrowserKey}
                     value={dropoff}
@@ -518,11 +531,36 @@ export function BookingForm() {
                   ) : null}
                 </div>
               ) : null}
+              {canShowMiniMap && (!isDistanceService || selectedTour) ? (
+                <div className="rounded-lg border bg-background p-4 md:col-span-2">
+                  <div className="mb-3">
+                    <p className="font-medium">{b.route}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {selectedTour
+                        ? "Mapa referencial del recorrido. El precio del tour se mantiene fijo."
+                        : "Mapa referencial del servicio. El precio se confirma segun disponibilidad."}
+                    </p>
+                  </div>
+                  <RouteMiniMap
+                    apiKey={googleMapsBrowserKey}
+                    cityId={cityId}
+                    departureAt={departureAt}
+                    destination={dropoff}
+                    destinationPlaceId={destinationPlaceId}
+                    enabled={canShowMiniMap}
+                    language={language}
+                    origin={pickup}
+                    originPlaceId={originPlaceId}
+                  />
+                </div>
+              ) : null}
             </CardContent>
           </Card>
           </motion.div>
+          </AnimatePresence>
 
-          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.06 }}>
+          <AnimatePresence mode="wait">
+          <motion.div key="schedule-step" {...stepMotion}>
           <Card className="border-primary/12 shadow-[0_24px_80px_-48px_rgba(15,23,42,0.35)]">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -559,8 +597,10 @@ export function BookingForm() {
             </CardContent>
           </Card>
           </motion.div>
+          </AnimatePresence>
 
-          <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: 0.12 }}>
+          <AnimatePresence mode="wait">
+          <motion.div key="contact-step" {...stepMotion}>
           <Card className="border-primary/12 shadow-[0_24px_80px_-48px_rgba(15,23,42,0.35)]">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -581,6 +621,7 @@ export function BookingForm() {
             </CardContent>
           </Card>
           </motion.div>
+          </AnimatePresence>
         </div>
 
         <aside className="lg:sticky lg:top-24 lg:self-start">
@@ -625,24 +666,34 @@ export function BookingForm() {
                 </div>
               ) : null}
               <div className="border-t pt-5">
-                <p className="text-muted-foreground">{b.total}</p>
-                <Price value={estimatedTotal.amount} className="mt-1 block text-3xl font-semibold" />
-                <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                  {b.totalHelp}
-                </p>
-                {estimatedTotal.requiresAvailabilityCheck ? (
-                  <p className="mt-2 rounded-md bg-secondary px-3 py-2 text-xs font-semibold text-secondary-foreground">
-                    {b.availability}
-                  </p>
-                ) : null}
-                <div className="mt-3 space-y-1 text-xs text-muted-foreground">
-                  {estimatedTotal.breakdown.map((item) => (
-                    <div key={item.label} className="flex justify-between gap-3">
-                      <span>{formatBreakdownLabel(item.label, language)}</span>
-                      <Price value={item.amount} />
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={estimatedTotal.amount}
+                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                  >
+                    <p className="text-muted-foreground">{b.total}</p>
+                    <Price value={estimatedTotal.amount} className="mt-1 block text-3xl font-semibold" />
+                    <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                      {b.totalHelp}
+                    </p>
+                    {estimatedTotal.requiresAvailabilityCheck ? (
+                      <p className="mt-2 rounded-md bg-secondary px-3 py-2 text-xs font-semibold text-secondary-foreground">
+                        {b.availability}
+                      </p>
+                    ) : null}
+                    <div className="mt-3 space-y-1 text-xs text-muted-foreground">
+                      {estimatedTotal.breakdown.map((item) => (
+                        <div key={item.label} className="flex justify-between gap-3">
+                          <span>{formatBreakdownLabel(item.label, language)}</span>
+                          <Price value={item.amount} />
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </motion.div>
+                </AnimatePresence>
               </div>
               <Button type="submit" className="w-full" disabled={mutation.isPending}>
                 <CreditCard className="size-4" aria-hidden />
