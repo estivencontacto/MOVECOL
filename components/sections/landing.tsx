@@ -8,15 +8,20 @@ import { motion, useInView } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
 import {
   ArrowRight,
+  BriefcaseBusiness,
   CalendarDays,
   Car,
   ChevronRight,
   CheckCircle2,
   Clock,
+  Compass,
   CreditCard,
   Headphones,
+  HeartPulse,
+  Landmark,
+  Luggage,
   MapPin,
-  PlaneTakeoff,
+  Route,
   Search,
   ShieldCheck,
   Star,
@@ -237,6 +242,16 @@ const serviceLabels: Record<string, { ES: string; EN: string }> = {
   "private-tours": { ES: "Tours privados", EN: "Private tours" },
   corporate: { ES: "Corporativo", EN: "Corporate" },
   events: { ES: "Eventos", EN: "Events" }
+};
+
+const landingServiceIcons: Record<string, LucideIcon> = {
+  "airport-transfer": Luggage,
+  transfers: Route,
+  hourly: Timer,
+  "medical-tourism": HeartPulse,
+  "private-tours": Compass,
+  corporate: BriefcaseBusiness,
+  events: CalendarDays
 };
 
 const serviceDescriptions: Record<string, { ES: string; EN: string }> = {
@@ -542,13 +557,10 @@ export function LandingPage() {
                           onClick={() => setActiveCitySlug(city.slug)}
                           className={
                             isActive
-                              ? "travel-card flex min-h-[78px] items-center gap-3 overflow-hidden rounded-md border border-foreground bg-foreground p-2 text-left text-background shadow-md transition duration-300"
-                              : "travel-card flex min-h-[78px] items-center gap-3 overflow-hidden rounded-md border bg-white p-2 text-left text-foreground transition duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm"
+                              ? "premium-card flex min-h-[78px] items-center gap-3 overflow-hidden rounded-md border border-foreground bg-foreground p-2 text-left text-background shadow-md"
+                              : "premium-card flex min-h-[78px] items-center gap-3 overflow-hidden rounded-md border bg-white p-2 text-left text-foreground"
                           }
                         >
-                          <span className="travel-icon" aria-hidden="true">
-                            <PlaneTakeoff className="size-4" aria-hidden />
-                          </span>
                           <span className="relative h-12 w-14 shrink-0 overflow-hidden rounded-md">
                             <Image
                               src={cityDetails.heroImage}
@@ -655,10 +667,7 @@ export function LandingPage() {
           <SectionHeader eyebrow={t.featured} title={t.featuredTitle} description={t.featuredDescription} />
           <div className="mt-10 grid gap-5 lg:grid-cols-2">
             {cities.map((city) => (
-              <Link key={city.id} href={`/destinos/${city.slug}`} className="group travel-card overflow-hidden rounded-2xl border bg-card shadow-sm transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_28px_70px_-36px_rgba(15,23,42,0.55)]">
-                <span className="travel-icon" aria-hidden="true">
-                  <PlaneTakeoff className="size-4" aria-hidden />
-                </span>
+              <Link key={city.id} href={`/destinos/${city.slug}`} className="group premium-card overflow-hidden rounded-2xl border bg-card shadow-sm">
                 <div className="relative aspect-[16/11]">
                   <Image
                     src={city.image}
@@ -669,6 +678,9 @@ export function LandingPage() {
                   />
                   <div className="absolute inset-0 bg-foreground/0 transition duration-300 group-hover:bg-foreground/20" />
                   <Badge className="absolute left-4 top-4 rounded-full bg-foreground text-background">{cityCopy[city.slug]?.label}</Badge>
+                  <span className="premium-icon absolute bottom-4 left-4 border-white/35 bg-white/95">
+                    <Compass className="size-5" aria-hidden />
+                  </span>
                   <span className="absolute bottom-4 right-4 translate-y-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-foreground opacity-0 shadow-lg transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
                     {language === "EN" ? "View more" : "Ver mas"}
                   </span>
@@ -698,17 +710,17 @@ export function LandingPage() {
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {visibleServices.map((service) => {
               const serviceImage = getLandingServiceImage(service.id, activeCity.slug);
+              const ServiceIcon = landingServiceIcons[service.id] ?? Car;
               return (
                 <SectionReveal key={service.id}>
-                  <Link href={`/servicios/${service.slug}`} className="group travel-card relative block h-full overflow-hidden rounded-lg border bg-card shadow-sm transition duration-300 hover:-translate-y-1.5 hover:bg-white hover:shadow-[0_24px_70px_-38px_rgba(15,23,42,0.45)]">
-                    <span className="travel-icon" aria-hidden="true">
-                      <PlaneTakeoff className="size-4" aria-hidden />
-                    </span>
+                  <Link href={`/servicios/${service.slug}`} className="group premium-card relative block h-full overflow-hidden rounded-lg border bg-card shadow-sm hover:bg-white">
                     <div className="relative aspect-[16/10]">
                       <Image src={serviceImage} alt={service.title} fill className="object-cover transition duration-500 group-hover:scale-105" />
                     </div>
                     <div className="p-5">
-                      <Car className="mb-3 size-5 text-primary" aria-hidden />
+                      <span className="premium-icon mb-3">
+                        <ServiceIcon className="size-5" aria-hidden />
+                      </span>
                       <h3 className="text-lg font-semibold">{serviceLabels[service.id]?.[language] ?? service.title}</h3>
                       <p className="mt-2 text-sm leading-6 text-muted-foreground">
                         {serviceDescriptions[service.id]?.[language] ?? service.description}
@@ -737,13 +749,13 @@ export function LandingPage() {
           </div>
           <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
             {mostBookedTours.map((tour) => (
-              <Card key={tour.id} className="group travel-card overflow-hidden rounded-lg transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_26px_80px_-42px_rgba(15,23,42,0.55)]">
-                <span className="travel-icon" aria-hidden="true">
-                  <PlaneTakeoff className="size-4" aria-hidden />
-                </span>
+              <Card key={tour.id} className="group premium-card overflow-hidden rounded-lg">
                 <div className="relative aspect-[16/11] overflow-hidden">
                   <Image src={getLandingTourImage(tour, activeCity.slug)} alt={tour.name} fill className="object-cover transition duration-500 group-hover:scale-105" />
                   <Badge className="absolute left-4 top-4 rounded-md bg-foreground text-background">{activeCity.name}</Badge>
+                  <span className="premium-icon absolute bottom-4 right-4 border-white/35 bg-white/95">
+                    <Landmark className="size-5" aria-hidden />
+                  </span>
                 </div>
                 <CardHeader>
                   <CardTitle className="text-xl">{tour.name}</CardTitle>

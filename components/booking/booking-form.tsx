@@ -2,7 +2,18 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
-import { AlertCircle, CalendarCheck, CheckCircle2, CreditCard, Loader2, MapPinned, Route, UserRound } from "lucide-react";
+import {
+  AlertCircle,
+  BadgeCheck,
+  CalendarCheck,
+  CheckCircle2,
+  ClipboardCheck,
+  CreditCard,
+  Loader2,
+  Navigation,
+  UserRound
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useMemo } from "react";
@@ -369,16 +380,16 @@ export function BookingForm() {
         <div className="space-y-6">
           <div className="grid gap-3 sm:grid-cols-3">
             {[
-              { label: b.stepRoute, icon: Route, active: true },
+              { label: b.stepRoute, icon: Navigation, active: true },
               { label: b.stepSchedule, icon: CalendarCheck, active: Boolean(date && time) },
-              { label: b.stepContact, icon: UserRound, active: form.formState.isSubmitted || Boolean(form.watch("customer.fullName")) }
+              { label: b.stepContact, icon: BadgeCheck, active: form.formState.isSubmitted || Boolean(form.watch("customer.fullName")) }
             ].map((step, index) => (
               <div
                 key={step.label}
-                className={step.active ? "rounded-lg border border-primary/30 bg-primary/[0.08] p-3" : "rounded-lg border bg-card p-3"}
+                className={step.active ? "premium-card rounded-lg border border-primary/30 bg-primary/[0.08] p-3" : "premium-card rounded-lg border bg-card p-3"}
               >
                 <div className="flex items-center gap-3">
-                  <span className={step.active ? "grid size-8 place-items-center rounded-md bg-primary text-primary-foreground" : "grid size-8 place-items-center rounded-md bg-muted text-muted-foreground"}>
+                  <span className="premium-icon shrink-0" data-active={step.active ? "true" : undefined}>
                     <step.icon className="size-4" aria-hidden />
                   </span>
                   <div>
@@ -395,7 +406,7 @@ export function BookingForm() {
           <Card className="overflow-hidden border-primary/12 shadow-[0_24px_80px_-48px_rgba(15,23,42,0.45)]">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Route className="size-5" aria-hidden />
+                <TitleIcon icon={Navigation} />
                 {b.routeService}
               </CardTitle>
             </CardHeader>
@@ -573,7 +584,7 @@ export function BookingForm() {
           <Card className="border-primary/12 shadow-[0_24px_80px_-48px_rgba(15,23,42,0.35)]">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <CalendarCheck className="size-5" aria-hidden />
+                <TitleIcon icon={CalendarCheck} />
                 {b.schedule}
               </CardTitle>
             </CardHeader>
@@ -613,7 +624,7 @@ export function BookingForm() {
           <Card className="border-primary/12 shadow-[0_24px_80px_-48px_rgba(15,23,42,0.35)]">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <UserRound className="size-5" aria-hidden />
+                <TitleIcon icon={UserRound} />
                 {b.contact}
               </CardTitle>
             </CardHeader>
@@ -637,7 +648,7 @@ export function BookingForm() {
           <Card className="overflow-hidden border-primary/12 shadow-[0_28px_90px_-50px_rgba(15,23,42,0.55)]">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <MapPinned className="size-5 text-primary" aria-hidden />
+                <TitleIcon icon={ClipboardCheck} />
                 {b.summary}
               </CardTitle>
             </CardHeader>
@@ -718,6 +729,14 @@ export function BookingForm() {
         </aside>
       </div>
     </motion.form>
+  );
+}
+
+function TitleIcon({ icon: Icon }: { icon: LucideIcon }) {
+  return (
+    <span className="premium-icon shrink-0" aria-hidden>
+      <Icon className="size-5" />
+    </span>
   );
 }
 

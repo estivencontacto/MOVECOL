@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Clock, PlaneTakeoff, ShieldCheck, Users } from "lucide-react";
+import { ArrowRight, Clock, Compass, ShieldCheck, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,10 +42,7 @@ export function TourGrid({
         <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {tours.map((tour) => (
             <SectionReveal key={tour.id}>
-              <Card className="group travel-card flex h-full overflow-hidden transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_26px_80px_-42px_rgba(15,23,42,0.55)]">
-                <span className="travel-icon" aria-hidden="true">
-                  <PlaneTakeoff className="size-4" aria-hidden />
-                </span>
+              <Card className="group premium-card flex h-full overflow-hidden">
                 <div className="flex w-full flex-col">
               <div className="relative aspect-[4/3] overflow-hidden">
                 <Image
@@ -60,6 +57,9 @@ export function TourGrid({
                     {tour.pricingMode === "global" ? "Plan global" : "Plan privado"}
                   </Badge>
                 </div>
+                <span className="premium-icon absolute right-4 top-4 border-white/35 bg-white/95">
+                  <Compass className="size-5" aria-hidden />
+                </span>
               </div>
               <CardHeader className="pb-3">
                 <CardTitle className="text-2xl">{tour.name}</CardTitle>
