@@ -1,6 +1,7 @@
 import { cities, services, tours } from "@/lib/data/catalog";
 import { sendPaymentConfirmedEmail } from "@/lib/services/email";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isMissingExpectedAmountColumnError } from "@/lib/supabase/schema-errors";
 import type { WompiTransaction } from "@/lib/wompi";
 
 type ReservationPaymentRecord = {
@@ -37,22 +38,7 @@ export async function syncWompiTransactionPayment(transaction: WompiTransaction)
   const paymentStatus = mapWompiStatus(transaction.status);
   const reservationStatus = mapReservationStatus(paymentStatus);
   const supabase = createAdminClient();
-  const { data: reservation, error: reservationLookupError } = await supabase
-    .from("reservations")
-    .select(
-      "id, status, expected_amount_cents, city_id, service_id, tour_id, reservation_date, reservation_time, passengers, pickup_address, dropoff_address, customers(email, full_name)"
-    )
-    .eq("id", transaction.reference)
-    .maybeSingle();
-
-  if (reservationLookupError) {
-    console.error("Wompi reservation lookup failed", {
-      reservationId: transaction.reference,
-      message: reservationLookupError.message
-    });
-  }
-
-  const normalizedReservation = reservation as ReservationPaymentRecord | null;
+  const normalizedReservation = await getPaymentReservation(transaction.reference);
   const expectedAmountCents = normalizedReservation?.expected_amount_cents;
   if (
     typeof expectedAmountCents === "number" &&
@@ -124,6 +110,49 @@ export async function syncWompiTransactionPayment(transaction: WompiTransaction)
     paymentStatus,
     reservationStatus
   };
+}
+
+async function getPaymentReservation(reservationId: string) {
+  const supabase = createAdminClient();
+  const selectWithExpectedAmount =
+    "id, status, expected_amount_cents, city_id, service_id, tour_id, reservation_date, reservation_time, passengers, pickup_address, dropoff_address, customers(email, full_name)";
+  const selectLegacy =
+    "id, status, city_id, service_id, tour_id, reservation_date, reservation_time, passengers, pickup_address, dropoff_address, customers(email, full_name)";
+  const { data, error } = await supabase
+    .from("reservations")
+    .select(selectWithExpectedAmount)
+    .eq("id", reservationId)
+    .maybeSingle();
+
+  if (!error) {
+    return data as ReservationPaymentRecord | null;
+  }
+
+  if (!isMissingExpectedAmountColumnError(error)) {
+    console.error("Wompi reservation lookup failed", {
+      reservationId,
+      message: error.message
+    });
+    return null;
+  }
+
+  console.error("Supabase migration missing during Wompi sync: reservations.expected_amount_cents.");
+
+  const { data: legacyData, error: legacyError } = await supabase
+    .from("reservations")
+    .select(selectLegacy)
+    .eq("id", reservationId)
+    .maybeSingle();
+
+  if (legacyError) {
+    console.error("Wompi legacy reservation lookup failed", {
+      reservationId,
+      message: legacyError.message
+    });
+    return null;
+  }
+
+  return legacyData ? ({ ...legacyData, expected_amount_cents: null } as ReservationPaymentRecord) : null;
 }
 
 export function mapWompiStatus(status?: string) {

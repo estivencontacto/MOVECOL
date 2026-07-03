@@ -37,6 +37,6 @@ export type ContactInput = z.infer<typeof contactSchema>;
 
 export const checkoutSchema = z.object({
   reservationId: z.string().uuid(),
-  amountInCents: z.number().int().positive(),
+  amountInCents: z.number().int().positive().optional(),
   currency: z.literal("COP").default("COP")
 });

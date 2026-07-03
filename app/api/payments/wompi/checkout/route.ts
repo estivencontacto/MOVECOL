@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { checkoutSchema } from "@/lib/domain/schemas";
+import { isSupabaseAdminConfigured } from "@/lib/env";
 import { enforceRateLimit } from "@/lib/services/rate-limit";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { buildWompiCheckoutUrl } from "@/lib/wompi";
@@ -20,14 +21,31 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Datos de checkout invalidos" }, { status: 422 });
   }
 
-  const amountInCents = await resolveExpectedAmountCents(
-    parsed.data.reservationId,
-    parsed.data.amountInCents
-  );
+  if (!isSupabaseAdminConfigured()) {
+    return NextResponse.json({ error: "Reservas no esta configurado" }, { status: 503 });
+  }
+
+  const reservation = await resolveCheckoutReservation(parsed.data.reservationId);
+
+  if (!reservation) {
+    return NextResponse.json({ error: "Reserva no encontrada" }, { status: 404 });
+  }
+
+  if (reservation.status === "confirmed" || reservation.status === "completed") {
+    return NextResponse.json({ error: "La reserva ya fue pagada" }, { status: 409 });
+  }
+
+  if (typeof reservation.expected_amount_cents !== "number") {
+    return NextResponse.json(
+      { error: "La reserva no tiene un monto de pago valido" },
+      { status: 409 }
+    );
+  }
 
   const checkoutUrl = await buildWompiCheckoutUrl({
     reservationId: parsed.data.reservationId,
-    amountInCents
+    amountInCents: reservation.expected_amount_cents,
+    customer: reservation.customer
   });
 
   if (!checkoutUrl) {
@@ -37,31 +55,55 @@ export async function POST(request: Request) {
   return NextResponse.json({ checkoutUrl });
 }
 
-async function resolveExpectedAmountCents(reservationId: string, fallbackAmountCents: number) {
+async function resolveCheckoutReservation(reservationId: string) {
   try {
     const supabase = createAdminClient();
     const { data, error } = await supabase
       .from("reservations")
-      .select("expected_amount_cents")
+      .select("id, status, expected_amount_cents, customers(email, full_name, phone)")
       .eq("id", reservationId)
       .maybeSingle();
 
     if (error) {
-      console.error("Wompi checkout amount lookup failed", {
+      console.error("Wompi checkout reservation lookup failed", {
         reservationId,
         message: error.message
       });
+      return null;
     }
 
-    if (typeof data?.expected_amount_cents === "number") {
-      return data.expected_amount_cents;
-    }
+    if (!data) return null;
+
+    const customer = normalizeCustomer(data.customers);
+
+    return {
+      id: data.id as string,
+      status: data.status as string,
+      expected_amount_cents: data.expected_amount_cents as number | null,
+      customer
+    };
   } catch (error) {
-    console.error("Wompi checkout amount lookup failed", {
+    console.error("Wompi checkout reservation lookup failed", {
       reservationId,
       message: error instanceof Error ? error.message : "Unknown error"
     });
+    return null;
   }
+}
 
-  return fallbackAmountCents;
+function normalizeCustomer(customer: unknown) {
+  const normalized = Array.isArray(customer) ? customer[0] : customer;
+
+  if (!normalized || typeof normalized !== "object") return undefined;
+  const record = normalized as {
+    email?: string | null;
+    full_name?: string | null;
+    phone?: string | null;
+  };
+
+  return {
+    email: record.email ?? undefined,
+    fullName: record.full_name ?? undefined,
+    phone: record.phone ?? undefined
+  };
 }

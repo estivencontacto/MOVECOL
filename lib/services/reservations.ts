@@ -3,6 +3,7 @@ import { cities, services, tours, vehicles } from "@/lib/data/catalog";
 import type { ReservationInput } from "@/lib/domain/schemas";
 import { estimateReservationPricing, toCents } from "@/lib/services/pricing";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isMissingExpectedAmountColumnError } from "@/lib/supabase/schema-errors";
 
 export async function createReservation(input: ReservationInput) {
   const supabase = createAdminClient();
@@ -35,7 +36,7 @@ export async function createReservation(input: ReservationInput) {
     throw customerError;
   }
 
-  const { error: reservationError } = await supabase.from("reservations").insert({
+  const reservationPayload = {
     id: reservationId,
     customer_id: customer.id,
     city_id: city.id,
@@ -51,10 +52,23 @@ export async function createReservation(input: ReservationInput) {
     dropoff_address: input.dropoff,
     notes: input.notes ?? null,
     expected_amount_cents: expectedAmountCents
-  });
+  };
+
+  const { error: reservationError } = await supabase.from("reservations").insert(reservationPayload);
 
   if (reservationError) {
-    throw reservationError;
+    if (!isMissingExpectedAmountColumnError(reservationError)) {
+      throw reservationError;
+    }
+
+    console.error("Supabase migration missing: reservations.expected_amount_cents. Retrying reservation insert without the column.");
+
+    const { expected_amount_cents: _expectedAmountCents, ...legacyReservationPayload } = reservationPayload;
+    const { error: legacyReservationError } = await supabase.from("reservations").insert(legacyReservationPayload);
+
+    if (legacyReservationError) {
+      throw legacyReservationError;
+    }
   }
 
   return {

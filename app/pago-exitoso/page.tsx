@@ -6,6 +6,7 @@ import { cities, services, tours } from "@/lib/data/catalog";
 import { isSupabaseAdminConfigured } from "@/lib/env";
 import { syncWompiTransactionPayment } from "@/lib/services/payments";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isMissingExpectedAmountColumnError } from "@/lib/supabase/schema-errors";
 import { getWompiTransaction } from "@/lib/wompi";
 import type { WompiTransaction } from "@/lib/wompi";
 
@@ -40,6 +41,10 @@ export default async function PaymentSuccessPage({ searchParams }: Props) {
   const isConfirmed = reservation?.status === "confirmed";
   const upsell = isConfirmed && reservation && city ? getUpsell(reservation, city.slug) : null;
   const paymentStatusLabel = formatWompiStatus(transaction?.status);
+  const totalCents =
+    typeof transaction?.amount_in_cents === "number"
+      ? transaction.amount_in_cents
+      : reservation?.expected_amount_cents;
 
   return (
     <main className="min-h-screen bg-muted/35 py-16">
@@ -77,8 +82,8 @@ export default async function PaymentSuccessPage({ searchParams }: Props) {
               <SummaryItem
                 label="Total"
                 value={
-                  typeof reservation?.expected_amount_cents === "number"
-                    ? formatCop(reservation.expected_amount_cents / 100)
+                  typeof totalCents === "number"
+                    ? formatCop(totalCents / 100)
                     : "-"
                 }
               />
@@ -147,6 +152,28 @@ async function getReservation(reservationId: string) {
     .maybeSingle();
 
   if (error) {
+    if (isMissingExpectedAmountColumnError(error)) {
+      console.error("Supabase migration missing on payment success page: reservations.expected_amount_cents.");
+
+      const { data: legacyData, error: legacyError } = await supabase
+        .from("reservations")
+        .select(
+          "id, city_id, service_id, tour_id, status, reservation_date, reservation_time, passengers, pickup_address, dropoff_address"
+        )
+        .eq("id", reservationId)
+        .maybeSingle();
+
+      if (legacyError) {
+        console.error("Payment success legacy reservation lookup failed", {
+          reservationId,
+          message: legacyError.message
+        });
+        return null;
+      }
+
+      return legacyData ? ({ ...legacyData, expected_amount_cents: null } as ReservationSuccess) : null;
+    }
+
     console.error("Payment success reservation lookup failed", {
       reservationId,
       message: error.message

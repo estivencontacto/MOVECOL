@@ -59,7 +59,7 @@ La migracion agregada es:
 supabase/migrations/002_add_expected_amount.sql
 ```
 
-Esto crea `reservations.expected_amount_cents`, que guarda el monto esperado de la reserva. El checkout de Wompi intenta usar ese valor guardado, y el webhook compara el valor pagado contra ese valor para detectar diferencias.
+Esto crea `reservations.expected_amount_cents`, que guarda el monto esperado de la reserva. El checkout de Wompi usa ese valor guardado y no acepta montos enviados por el cliente. El webhook compara el valor pagado contra ese valor para detectar diferencias.
 
 ## 4. Configurar webhook en Wompi
 
@@ -111,6 +111,14 @@ Wompi agrega el parametro `id` de la transaccion a esa URL. La pantalla de pago 
 7. Verifica que llegue correo al cliente.
 8. Revisa que `/pago-exitoso?reservation=<id>` muestre los datos.
 
+Tambien puedes correr un diagnostico local sin imprimir secretos:
+
+```bash
+pnpm payments:check
+```
+
+Ese comando confirma que las variables de Wompi existen, que se puede generar una URL firmada de checkout y que Supabase ya tiene la columna `reservations.expected_amount_cents`.
+
 ## 7. Paso a produccion
 
 1. Cambia credenciales sandbox por credenciales reales de Wompi.
@@ -124,5 +132,5 @@ Wompi agrega el parametro `id` de la transaccion a esa URL. La pantalla de pago 
 - Si falta `WOMPI_EVENTS_SECRET`, el webhook falla cerrado.
 - Los errores publicos no devuelven mensajes internos del servidor.
 - El webhook no bloquea automaticamente una reserva por diferencia de monto, pero deja `console.error` con los valores para revision manual.
-- El checkout intenta usar el monto esperado guardado en Supabase.
+- El checkout usa el monto esperado guardado en Supabase; si no existe, rechaza el pago antes de abrir Wompi.
 - Los endpoints publicos tienen rate limit basico.

@@ -11,6 +11,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "deploy-check": "node scripts/deploy-check.mjs --production",
+    "payments:check": "node scripts/check-payments-readiness.mjs",
     "format": "prettier --write .",
     "db:types": "supabase gen types typescript --project-id $SUPABASE_PROJECT_ID > lib/supabase/database.types.ts"
   },

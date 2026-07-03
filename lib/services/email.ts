@@ -18,8 +18,8 @@ export async function sendReservationEmail(input: ReservationInput, reservationI
       subject: `Reserva MOVE Colombia ${reservationId}`,
       html: `
         <h1>Reserva recibida</h1>
-        <p>Hola ${input.customer.fullName}, recibimos tu solicitud para ${input.date} a las ${input.time}.</p>
-        <p>Ruta: ${input.pickup} -> ${input.dropoff}</p>
+        <p>Hola ${escapeHtml(input.customer.fullName)}, recibimos tu solicitud para ${escapeHtml(input.date)} a las ${escapeHtml(input.time)}.</p>
+        <p>Ruta: ${escapeHtml(input.pickup)} -> ${escapeHtml(input.dropoff)}</p>
       `
     })
   });
