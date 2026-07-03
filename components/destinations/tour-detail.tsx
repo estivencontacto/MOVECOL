@@ -20,6 +20,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { WhatsAppIcon } from "@/components/ui/whatsapp-icon";
 import { TourGrid } from "@/components/destinations/tour-grid";
+import { TourGalleryCarousel } from "@/components/destinations/tour-gallery-carousel";
 import { TourRoutePreviewMap } from "@/components/destinations/tour-route-preview-map";
 import { Price } from "@/components/preferences/site-preferences";
 import { TourConditionBanner } from "@/components/weather/tour-condition-banner";
@@ -41,7 +42,7 @@ export function TourDetail({
 }) {
   const reservationUrl = `/reservar?city=${city.slug}&tour=${tour.id}`;
   const heroImage = tour.heroImage ?? tour.gallery[0];
-  const galleryImages = Array.from(new Set([heroImage, ...tour.gallery])).filter(Boolean);
+  const galleryImages = tour.gallery.length > 0 ? tour.gallery : [heroImage];
   const scheduleLabel = tour.schedules.join(" / ");
   const primaryRecommendation = getTourPrimaryRecommendation(tour);
   const physicalDemand = getTourPhysicalDemand(tour);
@@ -141,108 +142,101 @@ export function TourDetail({
       />
 
       <section className="section">
-        <div className="container grid gap-10 lg:grid-cols-[1fr_0.42fr]">
-          <div className="space-y-12">
-            <TourRoutePreviewMap citySlug={city.slug} route={routePreview} />
+        <div className="container space-y-12">
+          <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+            <div className="rounded-lg border bg-card p-6 shadow-sm md:p-8">
+              <p className="eyebrow">Detalle del tour</p>
+              <h2 className="mt-3 text-3xl font-semibold md:text-4xl">{tour.name}</h2>
+              <p className="mt-4 leading-7 text-muted-foreground">{tour.description}</p>
 
-            <div>
-              <p className="eyebrow">Experiencia</p>
-              <h2 className="mt-3 text-3xl font-semibold md:text-4xl">
-                Un plan privado con logistica cuidada de principio a fin
-              </h2>
-              <p className="mt-4 max-w-3xl leading-7 text-muted-foreground">
-                MOVE organiza el recorrido para que el foco este en disfrutar el destino:
-                recogida puntual, tiempos realistas, conductor profesional y acompanamiento
-                operativo antes y durante la reserva.
-              </p>
-              <div className="mt-8 grid gap-4 md:grid-cols-3">
-                <ValueCard
-                  icon={Compass}
-                  title="Ruta con criterio local"
-                  description="El recorrido se ajusta al trafico, clima, horarios y prioridades del grupo."
-                />
-                <ValueCard
-                  icon={Route}
-                  title="Tiempos coordinados"
-                  description="Horarios claros para salida, paradas principales, espera y regreso."
-                />
-                <ValueCard
-                  icon={MessageCircle}
-                  title="Soporte cercano"
-                  description="Confirmacion por WhatsApp y asistencia para resolver detalles del servicio."
-                />
-              </div>
-            </div>
-
-            <div>
-              <p className="eyebrow">Galeria</p>
-              <h2 className="mt-3 text-3xl font-semibold">Visualiza el recorrido</h2>
               <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                {galleryImages.map((src, index) => (
-                  <div
-                    key={`${src}-${index}`}
-                    className={
-                      index === 0
-                        ? "relative aspect-[16/10] overflow-hidden rounded-lg sm:col-span-2"
-                        : "relative aspect-[4/3] overflow-hidden rounded-lg"
-                    }
-                  >
-                    <Image
-                      src={src}
-                      alt={`${tour.name} ${index + 1}`}
-                      fill
-                      className="object-cover"
-                      sizes={index === 0 ? "(min-width: 768px) 66vw, 100vw" : "(min-width: 768px) 33vw, 100vw"}
-                    />
-                  </div>
-                ))}
+                <DetailPill icon={Clock} label="Duracion" value={tour.duration} />
+                <DetailPill icon={CalendarDays} label="Horarios" value={scheduleLabel} />
+                <DetailPill icon={Users} label="Minimo" value={`${tour.minimumPassengers ?? 2} pasajeros`} />
+                <DetailPill icon={Activity} label="Exigencia" value={physicalDemand} />
+              </div>
+
+              <div className="mt-8">
+                <h3 className="text-lg font-semibold">Que incluye</h3>
+                <div className="mt-4 grid gap-3">
+                  {tour.includes.map((item, index) => (
+                    <div key={item} className="flex gap-3 rounded-md border bg-muted/35 p-3">
+                      <span className="grid size-7 shrink-0 place-items-center rounded-full bg-secondary text-xs font-semibold text-secondary-foreground">
+                        {index + 1}
+                      </span>
+                      <p className="text-sm leading-6 text-muted-foreground">{item}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
-            <div>
-              <p className="eyebrow">Incluido en la ruta</p>
-              <h2 className="mt-3 text-3xl font-semibold">Lo que ya queda contemplado</h2>
-              <div className="mt-8 grid gap-4 md:grid-cols-2">
-                {tour.includes.map((item, index) => (
-                  <div key={item} className="flex gap-4 rounded-lg border bg-card p-5">
-                    <span className="grid size-9 shrink-0 place-items-center rounded-md bg-primary text-sm font-semibold text-primary-foreground">
-                      {index + 1}
-                    </span>
-                    <p className="text-sm leading-6 text-muted-foreground">{item}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <TourGalleryCarousel images={galleryImages} alt={tour.name} videoUrl={tour.videoUrl} />
           </div>
 
-          <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
-            <Card className="overflow-hidden border-primary/20">
-              <CardHeader className="bg-primary text-primary-foreground">
-                <p className="text-sm text-primary-foreground/74">Desde</p>
-                <CardTitle className="text-4xl">
-                  <Price value={tour.basePrice} />
-                </CardTitle>
-                <p className="text-xs font-medium text-primary-foreground/74">{priceLabel}</p>
-              </CardHeader>
-              <CardContent className="space-y-5 pt-6 text-sm">
-                <DetailRow icon={Clock} label="Duracion" value={tour.duration} />
-                <DetailRow icon={CalendarDays} label="Horarios" value={scheduleLabel} />
-                <DetailRow icon={Users} label="Minimo" value={`${tour.minimumPassengers ?? 2} pasajeros`} />
-                <Button asChild className="w-full">
-                  <Link href={reservationUrl}>Reservar tour</Link>
-                </Button>
-                <Button asChild variant="outline" className="w-full">
-                  <Link href={whatsappUrl} target="_blank">
-                    <WhatsAppIcon className="size-4" />
-                    Cotizar por WhatsApp
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+          <div className="grid gap-10 lg:grid-cols-[1fr_0.42fr]">
+            <div className="space-y-12">
+              <TourRoutePreviewMap citySlug={city.slug} route={routePreview} />
 
-            <InfoList title="No incluye" items={tour.excludes} icon="x" muted />
-            <InfoList title="Recomendaciones" items={tour.recommendations ?? []} icon="spark" muted />
-          </aside>
+              <div>
+                <p className="eyebrow">Experiencia</p>
+                <h2 className="mt-3 text-3xl font-semibold md:text-4xl">
+                  Un plan privado con logistica cuidada de principio a fin
+                </h2>
+                <p className="mt-4 max-w-3xl leading-7 text-muted-foreground">
+                  MOVE organiza el recorrido para que el foco este en disfrutar el destino:
+                  recogida puntual, tiempos realistas, conductor profesional y acompanamiento
+                  operativo antes y durante la reserva.
+                </p>
+                <div className="mt-8 grid gap-4 md:grid-cols-3">
+                  <ValueCard
+                    icon={Compass}
+                    title="Ruta con criterio local"
+                    description="El recorrido se ajusta al trafico, clima, horarios y prioridades del grupo."
+                  />
+                  <ValueCard
+                    icon={Route}
+                    title="Tiempos coordinados"
+                    description="Horarios claros para salida, paradas principales, espera y regreso."
+                  />
+                  <ValueCard
+                    icon={MessageCircle}
+                    title="Soporte cercano"
+                    description="Confirmacion por WhatsApp y asistencia para resolver detalles del servicio."
+                  />
+                </div>
+              </div>
+            </div>
+
+            <aside className="space-y-5 lg:sticky lg:top-24 lg:self-start">
+              <Card className="overflow-hidden border-primary/20">
+                <CardHeader className="bg-primary text-primary-foreground">
+                  <p className="text-sm text-primary-foreground/74">Desde</p>
+                  <CardTitle className="text-4xl">
+                    <Price value={tour.basePrice} />
+                  </CardTitle>
+                  <p className="text-xs font-medium text-primary-foreground/74">{priceLabel}</p>
+                </CardHeader>
+                <CardContent className="space-y-5 pt-6 text-sm">
+                  <DetailRow icon={Clock} label="Duracion" value={tour.duration} />
+                  <DetailRow icon={CalendarDays} label="Horarios" value={scheduleLabel} />
+                  <DetailRow icon={Users} label="Minimo" value={`${tour.minimumPassengers ?? 2} pasajeros`} />
+                  <Button asChild className="w-full">
+                    <Link href={reservationUrl}>Reservar tour</Link>
+                  </Button>
+                  <Button asChild variant="outline" className="w-full">
+                    <Link href={whatsappUrl} target="_blank">
+                      <WhatsAppIcon className="size-4" />
+                      Cotizar por WhatsApp
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <InfoList title="No incluye" items={tour.excludes} icon="x" muted />
+              <InfoList title="Recomendaciones" items={tour.recommendations ?? []} icon="spark" muted />
+            </aside>
+          </div>
         </div>
       </section>
 
@@ -296,6 +290,26 @@ function ValueCard({
       </div>
       <h3 className="mt-4 text-lg font-semibold">{title}</h3>
       <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
+    </div>
+  );
+}
+
+function DetailPill({
+  icon: Icon,
+  label,
+  value
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-md border bg-muted/35 p-4">
+      <div className="flex items-center gap-2 text-sm font-semibold">
+        <Icon className="size-4 text-primary" aria-hidden />
+        {label}
+      </div>
+      <p className="mt-2 text-sm text-muted-foreground">{value}</p>
     </div>
   );
 }

@@ -95,7 +95,7 @@ export function CityServices({
 
             return (
               <SectionReveal key={service.id}>
-                <Card className="group premium-card flex h-full overflow-hidden">
+                <Card className="group premium-card flex h-full overflow-hidden border transition duration-300 hover:-translate-y-1 hover:border-secondary/70">
                   <div className="flex w-full flex-col">
                   {image ? (
                     <div className="relative aspect-[16/10] overflow-hidden">
@@ -109,7 +109,7 @@ export function CityServices({
                     </div>
                   ) : null}
                   <CardHeader className="pb-3">
-                    <div className="premium-icon mb-3">
+                    <div className="mb-3 grid size-10 place-items-center rounded-full bg-secondary/15 text-primary transition group-hover:bg-secondary group-hover:text-secondary-foreground">
                       <Icon className="size-5" aria-hidden />
                     </div>
                     <CardTitle className="text-2xl">{getTitle(service)}</CardTitle>

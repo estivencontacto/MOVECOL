@@ -16,12 +16,12 @@ const physicalDemandByTourId: Record<string, string> = {
   "bog-hacienda-napoles": "Baja, jornada larga",
   "bog-miradores": "Baja",
   "bog-monserrate": "Media por altura",
-  "bog-la-candelaria": "Media",
-  "bog-plaza-bolivar": "Baja",
-  "bog-museo-oro": "Baja",
+  "bog-centro-historico-candelaria": "Media",
+  "bog-gran-san-victorino": "Media",
   "bog-zona-t": "Baja",
   "bog-guatavita": "Media a alta",
-  "bog-catedral-sal": "Baja a media"
+  "bog-catedral-sal": "Baja a media",
+  "bog-jaime-duque": "Baja a media"
 };
 
 export function getTourPhysicalDemand(tour: Tour) {

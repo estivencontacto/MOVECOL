@@ -79,6 +79,7 @@ export const cities: City[] = [
     airport: "Aeropuerto Internacional Jose Maria Cordova",
     image: localImage("/images/MEDELLIN/TOURS/CITY TOUR MEDELLIN/HERO/images (2).jpg"),
     heroImage: localImage("/images/MEDELLIN/TOURS/CITY TOUR MEDELLIN/HERO/images (2).jpg"),
+    videoUrl: "https://www.youtube.com/watch?v=7589HBckaoo",
     serviceIds: ["airport-transfer", "transfers", "hourly", "medical-tourism", "private-tours", "corporate"],
     active: true
   },
@@ -99,6 +100,7 @@ export const cities: City[] = [
       localImage("/images/BOGOTA/TOURS/MONSERRATE/HERO/1000_F_580460987_O8r0FPCDN8J0U0CXOnUbguQt4ahTkJDw.jpg"),
       localImage("/images/BOGOTA/SERVICIOS/TRANSPORTE CORPORATIVO/HERO/17a262cc-796c-424a-87aa-c6dd1300ae66.png")
     ],
+    videoUrl: "https://www.youtube.com/shorts/FaOBWw-TzMo",
     serviceIds: ["airport-transfer", "transfers", "hourly", "medical-tourism", "private-tours", "corporate"],
     active: true
   }
@@ -219,6 +221,21 @@ export const services: Service[] = [
   }
 ];
 
+const haciendaNapolesDescription =
+  "Tour de dia completo a Hacienda Napoles. Puedes elegir Pasaporte Basico Adulto, enfocado en fauna, flora, museos, animales y recorridos sin zona acuatica, o Pasaporte Safari, que ademas incluye Parque Acuatico DINOS y Rio Salvaje. El Pasaporte Safari no incluye Mundo de Pangea y ambos pasaportes son validos por un solo dia.";
+
+const haciendaNapolesIncludes = [
+  "Transporte privado con recogida en Airbnb/hotel",
+  "Desayuno",
+  "Ingreso con el pasaporte elegido"
+];
+
+const haciendaNapolesExcludes = [
+  "Gastos no especificados",
+  "Gastos en carretera",
+  "Pasaporte de ingreso a la Hacienda Napoles"
+];
+
 export const tours: Tour[] = [
   {
     id: "med-city-tour",
@@ -226,11 +243,18 @@ export const tours: Tour[] = [
     name: "City Tour",
     slug: "city-tour",
     description: "Recorrido privado por los puntos esenciales de Medellin con ritmo flexible.",
-    includes: ["Conductor privado", "Recogida en hotel", "Paradas fotograficas"],
+    includes: [
+      "Comuna 13",
+      "Metro Cable",
+      "Pueblito Paisa",
+      "Plaza Botero",
+      "Parques emblematicos",
+      "Transporte privado ida y vuelta al hotel/airbnb"
+    ],
     excludes: ["Alimentacion", "Entradas no especificadas"],
     duration: "4 horas",
     schedules: ["08:00", "10:00", "14:00"],
-    basePrice: 145000,
+    basePrice: 180000,
     pricingMode: "per-person",
     minimumPassengers: 2,
     heroImage: localImage("/images/MEDELLIN/TOURS/CITY TOUR MEDELLIN/HERO/images (2).jpg"),
@@ -242,6 +266,7 @@ export const tours: Tour[] = [
       "/images/MEDELLIN/TOURS/CITY TOUR MEDELLIN/GALERIA/images (4).jpg",
       "/images/MEDELLIN/TOURS/CITY TOUR MEDELLIN/GALERIA/images (5).jpg"
     ),
+    videoUrl: "https://www.youtube.com/watch?v=HogDmIHgc5s",
     featured: true
   },
   {
@@ -250,11 +275,20 @@ export const tours: Tour[] = [
     name: "Comuna 13",
     slug: "comuna-13",
     description: "Arte urbano, historia local y miradores en una experiencia privada guiada.",
-    includes: ["Transporte privado", "Guia local", "Seguro de asistencia"],
+    includes: [
+      "Recorrido por graffitis y arte urbano",
+      "Paradas para fotos",
+      "Compra de souvenirs",
+      "Entrada a miradores",
+      "Escaleras electricas",
+      "Historia y transformacion social",
+      "Guia/acompanamiento",
+      "Degustacion local"
+    ],
     excludes: ["Almuerzo", "Compras personales"],
     duration: "3 horas",
     schedules: ["09:00", "13:00", "15:30"],
-    basePrice: 135000,
+    basePrice: 120000,
     pricingMode: "per-person",
     minimumPassengers: 2,
     heroImage: localImage("/images/MEDELLIN/TOURS/COMUNA 13/HERO/e8.jpg"),
@@ -265,6 +299,7 @@ export const tours: Tour[] = [
       "/images/MEDELLIN/TOURS/COMUNA 13/GALERIA/images (4).jpg",
       "/images/MEDELLIN/TOURS/COMUNA 13/GALERIA/ven-y-dejate-contar-la.jpg"
     ),
+    videoUrl: "https://www.youtube.com/watch?v=yoYJBUTfs6g",
     featured: true
   },
   {
@@ -272,12 +307,25 @@ export const tours: Tour[] = [
     citySlug: "medellin",
     name: "Guatape",
     slug: "guatape",
-    description: "Dia completo hacia la Piedra del Penol, zocalos y embalse de Guatape.",
-    includes: ["Transporte privado", "Peajes", "Agua a bordo"],
-    excludes: ["Entrada a la piedra", "Alimentacion"],
+    description:
+      "Dia completo hacia Guatape con paradas en Alto del Chocho, granja interactiva, Casa al reves, Replica del Viejo Penol, Piedra del Penol y el pueblo de Guatape. Incluye descuentos con restaurantes y tiendas de souvenirs aliados, y permite sumar actividades opcionales como donas, jetski o tour en lancha por la represa. Es uno de los tours mas completos y recomendados: practicamente haces de todo en un solo dia.",
+    includes: [
+      "Parada en el Alto del Chocho",
+      "Granja interactiva",
+      "Casa al reves",
+      "Replica del Viejo Penol",
+      "Piedra del Penol (subida opcional)",
+      "Visita al pueblo de Guatape",
+      "Caminata guiada al malecon",
+      "Calle de las sombrillas",
+      "Museo del chocolate",
+      "Plaza central",
+      "Calle de los zocalos"
+    ],
+    excludes: ["Entrada a la piedra", "Alimentacion", "Subida a la Piedra del Penol"],
     duration: "10 horas",
     schedules: ["07:00", "08:00"],
-    basePrice: 225000,
+    basePrice: 260000,
     pricingMode: "per-person",
     minimumPassengers: 2,
     heroImage: localImage("/images/MEDELLIN/TOURS/GUATAPE/HERO/b5.jpg"),
@@ -289,6 +337,7 @@ export const tours: Tour[] = [
       "/images/MEDELLIN/TOURS/GUATAPE/GALERIA/images (4).jpg",
       "/images/MEDELLIN/TOURS/GUATAPE/GALERIA/images (5).jpg"
     ),
+    videoUrl: "https://www.youtube.com/watch?v=u6HtNoqqc9Y",
     featured: true
   },
   {
@@ -312,6 +361,7 @@ export const tours: Tour[] = [
       "/images/MEDELLIN/TOURS/VUELTA AL ORIENTE ANTIOQUENO/GALERIA/images (5).jpg",
       "/images/MEDELLIN/TOURS/VUELTA AL ORIENTE ANTIOQUENO/GALERIA/images (6).jpg"
     ),
+    videoUrl: "https://www.youtube.com/watch?v=ezOSpRIJ-ls",
     featured: true
   },
   {
@@ -319,8 +369,14 @@ export const tours: Tour[] = [
     citySlug: "medellin",
     name: "Coffee Tour",
     slug: "coffee-tour",
-    description: "Experiencia cafetera privada con traslado desde Medellin.",
-    includes: ["Transporte", "Experiencia cafetera", "Degustacion"],
+    description:
+      "Experiencia cafetera autentica: no es un show, es la vida real de una finca cafetera local con caficultores. Aprendes el proceso del cafe, conectas con historias reales y apoyas turismo comunitario sostenible.",
+    includes: [
+      "Tour guiado por caficultores (90 min)",
+      "Cata premium de cafe especial",
+      "Transporte en chiva tipica desde Parque Arvi",
+      "Certificado oficial como Cafetero"
+    ],
     excludes: ["Almuerzo"],
     duration: "6 horas",
     schedules: ["08:00"],
@@ -334,20 +390,21 @@ export const tours: Tour[] = [
       "/images/MEDELLIN/TOURS/COFFEE TOUR/GALERIA/images (3).jpg",
       "/images/MEDELLIN/TOURS/COFFEE TOUR/GALERIA/images (5).jpg",
       "/images/MEDELLIN/TOURS/COFFEE TOUR/GALERIA/images (6).jpg"
-    )
+    ),
+    videoUrl: "https://www.youtube.com/watch?v=-pal5tzL-lw"
   },
   {
     id: "med-hacienda-napoles",
     citySlug: "medellin",
     name: "Hacienda Napoles",
     slug: "hacienda-napoles",
-    description: "Traslado privado de dia completo hacia el parque tematico.",
-    includes: ["Transporte", "Peajes", "Espera coordinada"],
-    excludes: ["Entradas", "Alimentacion"],
+    description: haciendaNapolesDescription,
+    includes: haciendaNapolesIncludes,
+    excludes: haciendaNapolesExcludes,
     duration: "14 horas",
     schedules: ["05:30"],
-    basePrice: 1350000,
-    pricingMode: "global",
+    basePrice: 500000,
+    pricingMode: "per-person",
     minimumPassengers: 2,
     heroImage: localImage("/images/MEDELLIN/TOURS/HACIENDA NAPOLES/HERO/c9.jpg"),
     cardImage: localImage("/images/MEDELLIN/TOURS/HACIENDA NAPOLES/CARD/0f.jpg"),
@@ -357,7 +414,9 @@ export const tours: Tour[] = [
       "/images/MEDELLIN/TOURS/HACIENDA NAPOLES/GALERIA/images (3).jpg",
       "/images/MEDELLIN/TOURS/HACIENDA NAPOLES/GALERIA/images (4).jpg",
       "/images/MEDELLIN/TOURS/HACIENDA NAPOLES/GALERIA/SANTUARIO-FAUNA-1024x682.jpg"
-    )
+    ),
+    videoUrl: "https://www.youtube.com/watch?v=wkFDgtAvhCw",
+    recommendations: ["Estacion Estadio 3:45am", "Av. Oriental 4:10am", "Parque del Poblado 4:30am"]
   },
   {
     id: "med-parapente",
@@ -365,7 +424,7 @@ export const tours: Tour[] = [
     name: "Parapente",
     slug: "parapente",
     description:
-      "Experiencia panoramica para volar sobre Medellin y el Valle de Aburra con operador certificado.",
+      "Actividad operada por una empresa externa en San Felix, a 40 minutos de Medellin. El vuelo dura aproximadamente 15 minutos y depende 100% del clima.",
     includes: ["Transporte", "Coordinacion logistica", "Vuelo panoramico", "Operador certificado"],
     excludes: ["Fotos o videos del operador", "Extras no especificados"],
     duration: "4 horas",
@@ -378,7 +437,16 @@ export const tours: Tour[] = [
     gallery: gallery(
       "/images/MEDELLIN/TOURS/PARAPENTE/GALERIA/Imagen-de-WhatsApp-2025-06-29-a-las-19.01.09_b0d04b01.jpg",
       "/images/MEDELLIN/TOURS/PARAPENTE/GALERIA/images (2).jpg"
-    )
+    ),
+    videoUrl: "https://www.youtube.com/watch?v=aFCv_VJii7o",
+    recommendations: [
+      "No aptas personas embarazadas",
+      "Personas con condiciones cardiacas requieren certificado medico",
+      "Edad minima 5 anos",
+      "Peso maximo 130kg",
+      "Franja recomendada 9:30am a 12:30pm",
+      "Fotos y videos disponibles como servicio adicional de la empresa"
+    ]
   },
   {
     id: "med-compras",
@@ -386,10 +454,10 @@ export const tours: Tour[] = [
     name: "Tour de Compras",
     slug: "tour-de-compras",
     description:
-      "Recorrido guiado por el corazon comercial de Medellin para moda, calzado y productos locales.",
+      "Recorrido guiado por el corazon comercial de Medellin para comprar moda y productos locales a precios directos de fabrica.",
     includes: ["El Hueco", "Moda y calzado", "Precios directos de fabrica", "Acompanamiento"],
     excludes: ["Compras personales", "Alimentacion"],
-    duration: "5 horas",
+    duration: "4 horas aproximadamente",
     schedules: ["09:00", "13:00"],
     basePrice: 195000,
     pricingMode: "per-person",
@@ -400,7 +468,8 @@ export const tours: Tour[] = [
       "/images/MEDELLIN/TOURS/TOUR DE COMPRAS/GALERIA/images (2).jpg",
       "/images/MEDELLIN/TOURS/TOUR DE COMPRAS/GALERIA/images (3).jpg",
       "/images/MEDELLIN/TOURS/TOUR DE COMPRAS/GALERIA/images (5).jpg"
-    )
+    ),
+    videoUrl: "https://www.youtube.com/watch?v=aGu0LgirrwA"
   },
   {
     id: "med-pablo-escobar",
@@ -429,11 +498,11 @@ export const tours: Tour[] = [
     name: "Miradores",
     slug: "miradores",
     description: "Ruta nocturna o al atardecer por miradores y zonas gastronomicas.",
-    includes: ["Transporte privado", "Paradas flexibles"],
+    includes: ["Mirador El Picacho", "Mirador El Cielo", "La Octava Maravilla", "Paradas panoramicas"],
     excludes: ["Consumos"],
     duration: "4 horas",
     schedules: ["16:00", "18:00"],
-    basePrice: 135000,
+    basePrice: 180000,
     pricingMode: "per-person",
     minimumPassengers: 2,
     heroImage: localImage("/images/MEDELLIN/TOURS/TOUR DE MIRADORES/HERO/images (5).jpg"),
@@ -445,7 +514,8 @@ export const tours: Tour[] = [
       "/images/MEDELLIN/TOURS/TOUR DE MIRADORES/GALERIA/images (3).jpg",
       "/images/MEDELLIN/TOURS/TOUR DE MIRADORES/GALERIA/images (6).jpg",
       "/images/MEDELLIN/TOURS/TOUR DE MIRADORES/GALERIA/images (7).jpg"
-    )
+    ),
+    videoUrl: "https://www.youtube.com/shorts/la2MaGHby3I"
   },
   {
     id: "med-santa-fe",
@@ -453,11 +523,21 @@ export const tours: Tour[] = [
     name: "Santa Fe de Antioquia",
     slug: "santa-fe-de-antioquia",
     description: "Pueblo patrimonio, arquitectura colonial y Puente de Occidente.",
-    includes: ["Transporte privado", "Peajes", "Agua a bordo"],
+    includes: [
+      "Transporte privado",
+      "Museo Juan del Corral",
+      "Iglesia y Parque Santa Barbara",
+      "Catedral Basilica de la Inmaculada Concepcion",
+      "Parque Principal",
+      "Iglesia y Parque Nuestra Senora de Chiquinquira",
+      "Visita a talleres de filigrana",
+      "Puente de Occidente",
+      "Guia profesional"
+    ],
     excludes: ["Alimentacion", "Guia especializado"],
     duration: "8 horas",
     schedules: ["08:00"],
-    basePrice: 215000,
+    basePrice: 400000,
     pricingMode: "per-person",
     minimumPassengers: 2,
     heroImage: localImage("/images/MEDELLIN/TOURS/SANTA FE DE ANTIOQUIA/HERO/images (2).jpg"),
@@ -466,7 +546,8 @@ export const tours: Tour[] = [
       "/images/MEDELLIN/TOURS/SANTA FE DE ANTIOQUIA/GALERIA/bd.jpg",
       "/images/MEDELLIN/TOURS/SANTA FE DE ANTIOQUIA/GALERIA/images (3).jpg",
       "/images/MEDELLIN/TOURS/SANTA FE DE ANTIOQUIA/GALERIA/Santa-Fe-De-Antioquia-medellin.jpg"
-    )
+    ),
+    videoUrl: "https://www.youtube.com/watch?v=5t_uoaTkllk"
   },
   {
     id: "bog-city-tour",
@@ -475,11 +556,17 @@ export const tours: Tour[] = [
     slug: "city-tour",
     description:
       "City Tour privado en Bogota para descubrir Plaza de Bolivar, La Candelaria, Museo del Oro, Chorro de Quevedo y el Eje Ambiental con comodidad, seguridad y tiempos flexibles.",
-    includes: ["Plaza de Bolivar", "La Candelaria", "Museo del Oro", "Chorro de Quevedo", "Eje Ambiental", "Transporte privado"],
+    includes: [
+      "Cerro de Monserrate (ascenso y descenso sujeto a disponibilidad)",
+      "Centro historico de Bogota - La Candelaria",
+      "Plaza de Bolivar",
+      "Teusaquillo (unico barrio Tudor en Latinoamerica)",
+      "Visita a una tostadora de cafe en Bogota"
+    ],
     excludes: ["Entradas", "Alimentacion"],
     duration: "5 horas",
     schedules: ["08:00", "13:00"],
-    basePrice: 480000,
+    basePrice: 180000,
     pricingMode: "per-person",
     minimumPassengers: 2,
     heroImage: localImage("/images/BOGOTA/TOURS/CITY TOUR BOGOTA/HERO/ChatGPT Image 1 jul 2026, 08_56_32 a.m.png"),
@@ -491,6 +578,7 @@ export const tours: Tour[] = [
       "/images/BOGOTA/TOURS/CITY TOUR BOGOTA/GALERIA/museo-del-oro-mo-salas-exposicion-permanente-2022-640x400.jpg",
       "/images/BOGOTA/TOURS/CITY TOUR BOGOTA/GALERIA/portada.foto_.hanz_.rippe_.idpc_.plaza_.de_.bolivar_0.jpg"
     ),
+    videoUrl: "https://www.youtube.com/watch?v=egNjoNRLgOY",
     recommendations: ["Llevar chaqueta liviana", "Usar zapatos comodos", "Reservar con tiempo si deseas ingresar al Museo del Oro"],
     keywords: ["city tour Bogota", "tour privado Bogota", "La Candelaria", "Museo del Oro"],
     featured: true
@@ -500,13 +588,13 @@ export const tours: Tour[] = [
     citySlug: "bogota",
     name: "Hacienda Napoles",
     slug: "hacienda-napoles",
-    description: "Traslado privado de dia completo hacia Hacienda Napoles con coordinacion de ruta, tiempos de espera y regreso a Bogota.",
-    includes: ["Transporte", "Peajes", "Espera coordinada"],
-    excludes: ["Entradas", "Alimentacion"],
+    description: haciendaNapolesDescription,
+    includes: haciendaNapolesIncludes,
+    excludes: haciendaNapolesExcludes,
     duration: "Dia completo",
     schedules: ["05:00", "06:00"],
-    basePrice: 1350000,
-    pricingMode: "global",
+    basePrice: 400000,
+    pricingMode: "per-person",
     minimumPassengers: 2,
     heroImage: localImage("/images/MEDELLIN/TOURS/HACIENDA NAPOLES/HERO/c9.jpg"),
     cardImage: localImage("/images/MEDELLIN/TOURS/HACIENDA NAPOLES/CARD/0f.jpg"),
@@ -517,6 +605,7 @@ export const tours: Tour[] = [
       "/images/MEDELLIN/TOURS/HACIENDA NAPOLES/GALERIA/images (4).jpg",
       "/images/MEDELLIN/TOURS/HACIENDA NAPOLES/GALERIA/SANTUARIO-FAUNA-1024x682.jpg"
     ),
+    videoUrl: "https://www.youtube.com/watch?v=wkFDgtAvhCw",
     recommendations: ["Salida temprano", "Confirmar entradas con anticipacion"],
     keywords: ["Hacienda Napoles desde Bogota", "tour privado Hacienda Napoles"]
   },
@@ -526,11 +615,11 @@ export const tours: Tour[] = [
     name: "Miradores",
     slug: "miradores",
     description: "Ruta privada por miradores urbanos y zonas gastronomicas para disfrutar Bogota al atardecer o en la noche.",
-    includes: ["Transporte privado", "Paradas flexibles"],
-    excludes: ["Consumos"],
-    duration: "4 horas",
+    includes: ["Mirador La Cueva del Arco", "Mirador La Calera", "Mirador Monserrate"],
+    excludes: ["No incluye entradas (solo cobran entrada en La Cueva del Arco)"],
+    duration: "4 horas aproximadamente",
     schedules: ["16:00", "18:00", "20:00"],
-    basePrice: 135000,
+    basePrice: 180000,
     pricingMode: "per-person",
     minimumPassengers: 2,
     heroImage: localImage("/images/MEDELLIN/TOURS/TOUR DE MIRADORES/HERO/images (5).jpg"),
@@ -543,6 +632,8 @@ export const tours: Tour[] = [
       "/images/MEDELLIN/TOURS/TOUR DE MIRADORES/GALERIA/images (6).jpg",
       "/images/MEDELLIN/TOURS/TOUR DE MIRADORES/GALERIA/images (7).jpg"
     ),
+    videoUrl: "https://www.youtube.com/watch?v=uz49V652rVs",
+    // TODO: agregar soporte para videos multiples y usar tambien https://www.youtube.com/shorts/dWdmvPG69os.
     recommendations: ["Llevar abrigo", "Ideal para grupos y parejas"],
     keywords: ["miradores Bogota", "tour nocturno Bogota"]
   },
@@ -552,12 +643,16 @@ export const tours: Tour[] = [
     name: "Monserrate",
     slug: "monserrate",
     description:
-      "El icono turistico mas representativo de Bogota, con una vista panoramica de toda la ciudad desde mas de 3.100 metros de altura.",
-    includes: ["Transporte privado", "Tiempo libre", "Espera del conductor", "Opcional teleferico o funicular"],
-    excludes: ["Ticket funicular/teleferico", "Alimentacion"],
+      "El icono turistico mas representativo de Bogota, con una vista panoramica de toda la ciudad desde mas de 3.100 metros de altura. Recomendado de lunes a viernes y sabados despues de las 2:00 p.m.; ideal reservar de 8:00 a.m. a 3:00 p.m. o tomar el segundo tour de 4:30 p.m. a 6:30 p.m. Sabados y domingos puede reemplazarse por Cerro de Guadalupe por alta afluencia en Monserrate.",
+    includes: [
+      "Transporte ida y vuelta (hotel/casa - Monserrate - hotel/casa)",
+      "Tiquetes de ascenso y descenso",
+      "Guia turistico ingles-espanol"
+    ],
+    excludes: ["Alimentacion", "Gastos no especificados"],
     duration: "3 horas",
     schedules: ["08:00", "15:00"],
-    basePrice: 90000,
+    basePrice: 110000,
     pricingMode: "per-person",
     minimumPassengers: 2,
     heroImage: localImage("/images/BOGOTA/TOURS/MONSERRATE/HERO/1000_F_580460987_O8r0FPCDN8J0U0CXOnUbguQt4ahTkJDw.jpg"),
@@ -567,81 +662,97 @@ export const tours: Tour[] = [
       "/images/BOGOTA/TOURS/MONSERRATE/GALERIA/1000_F_529507674_UGuwbJ1aDybP9RLwGNF9wmXlRU7PSHpN.jpg",
       "/images/BOGOTA/TOURS/MONSERRATE/GALERIA/1000_F_567813429_Vu4QHkQTrbCbKPfkoP6ypjYDWdGZhZkW.jpg"
     ),
+    videoUrl: "https://www.youtube.com/watch?v=qwuCdNtutCo",
     recommendations: ["Llevar abrigo", "Evitar subir si tienes sintomas de mal de altura", "Confirmar operacion de teleferico o funicular"],
     keywords: ["Monserrate", "tour Monserrate Bogota", "teleferico Monserrate"],
     featured: true
   },
   {
-    id: "bog-la-candelaria",
+    id: "bog-centro-historico-candelaria",
     citySlug: "bogota",
-    name: "La Candelaria",
-    slug: "la-candelaria",
+    name: "Tour Centro Historico La Candelaria",
+    slug: "centro-historico-candelaria",
     description:
-      "Experiencia cultural e historica por el centro fundacional de Bogota, entre arquitectura colonial, museos, arte urbano y gastronomia local.",
-    includes: ["Transporte privado", "Arquitectura colonial", "Museos", "Arte urbano", "Zonas gastronomicas"],
-    excludes: ["Entradas a museos", "Alimentacion", "Guia especializado si no se solicita"],
+      "Tour a pie por La Candelaria enfocado en historia, cultura, arquitectura y patrimonio, recorriendo la antigua Santa Fe de Bogota con su lado colonial, mistico y religioso.",
+    includes: [
+      "Avenida Jimenez",
+      "Plazoleta el Rosario",
+      "La Manzana Cultural",
+      "Plaza de mercado La Concordia",
+      "Plaza del Chorro de Quevedo",
+      "Calle 10 y Calle 11",
+      "Centro Cultural Gabriel Garcia Marquez",
+      "Plaza de Bolivar (Capitolio Nacional, Palacio Lievano, Palacio de Justicia, monumento a Simon Bolivar)",
+      "Entrada al Museo del Oro",
+      "Iglesias representativas de la zona"
+    ],
+    excludes: ["Museos adicionales no especificados", "Alimentacion"],
     duration: "4 horas",
     schedules: ["09:00", "14:00"],
-    basePrice: 85000,
+    basePrice: 130000,
     pricingMode: "per-person",
     minimumPassengers: 2,
     heroImage: localImage("/images/BOGOTA/TOURS/LA CANDELARIA/HERO/michael-baron-YQSXw2YVqyU-unsplash.jpg"),
-    cardImage: localImage("/images/BOGOTA/TOURS/LA CANDELARIA/CARD/aniket-das-G0pfvtnmPvA-unsplash.jpg"),
-    gallery: gallery(
-      "/images/BOGOTA/TOURS/LA CANDELARIA/GALERIA/disfruta-mejores-planes-candelaria.jpg",
-      "/images/BOGOTA/TOURS/LA CANDELARIA/GALERIA/images (1).jpg"
-    ),
-    recommendations: ["Usar zapatos comodos", "Llevar efectivo para cafes o entradas", "Mantener objetos personales seguros"],
-    keywords: ["La Candelaria Bogota", "tour cultural Bogota", "arte urbano Bogota"]
-  },
-  {
-    id: "bog-plaza-bolivar",
-    citySlug: "bogota",
-    name: "Plaza de Bolivar",
-    slug: "plaza-de-bolivar",
-    description:
-      "Recorrido historico por el corazon civico de Colombia, destacando la Catedral Primada, el Capitolio Nacional y el Palacio de Justicia.",
-    includes: ["Transporte privado", "Tiempo libre en la plaza", "Paradas fotograficas", "Contexto historico"],
-    excludes: ["Ingresos a edificios oficiales", "Alimentacion"],
-    duration: "3 horas",
-    schedules: ["09:00", "14:00"],
-    basePrice: 80000,
-    pricingMode: "per-person",
-    minimumPassengers: 2,
-    heroImage: localImage("/images/BOGOTA/TOURS/PLAZA DE BOLIVAR/HERO/portada.foto_.hanz_.rippe_.idpc_.plaza_.de_.bolivar_0.jpg"),
     cardImage: localImage("/images/BOGOTA/TOURS/PLAZA DE BOLIVAR/CARD/caption.jpg"),
-    gallery: gallery(
-      "/images/BOGOTA/TOURS/PLAZA DE BOLIVAR/GALERIA/images (2).jpg",
-      "/images/BOGOTA/TOURS/PLAZA DE BOLIVAR/GALERIA/istockphoto-1944446888-612x612.jpg",
-      "/images/BOGOTA/TOURS/PLAZA DE BOLIVAR/GALERIA/istockphoto-2160417598-612x612.jpg"
+    gallery: Array.from(
+      new Set([
+        ...gallery(
+          "/images/BOGOTA/TOURS/LA CANDELARIA/HERO/michael-baron-YQSXw2YVqyU-unsplash.jpg",
+          "/images/BOGOTA/TOURS/LA CANDELARIA/CARD/aniket-das-G0pfvtnmPvA-unsplash.jpg",
+          "/images/BOGOTA/TOURS/LA CANDELARIA/GALERIA/disfruta-mejores-planes-candelaria.jpg",
+          "/images/BOGOTA/TOURS/LA CANDELARIA/GALERIA/images (1).jpg",
+          "/images/BOGOTA/TOURS/PLAZA DE BOLIVAR/HERO/portada.foto_.hanz_.rippe_.idpc_.plaza_.de_.bolivar_0.jpg",
+          "/images/BOGOTA/TOURS/PLAZA DE BOLIVAR/CARD/caption.jpg",
+          "/images/BOGOTA/TOURS/PLAZA DE BOLIVAR/GALERIA/images (2).jpg",
+          "/images/BOGOTA/TOURS/PLAZA DE BOLIVAR/GALERIA/istockphoto-1944446888-612x612.jpg",
+          "/images/BOGOTA/TOURS/PLAZA DE BOLIVAR/GALERIA/istockphoto-2160417598-612x612.jpg",
+          "/images/BOGOTA/TOURS/MUSEO DEL ORO/HERO/images (1).jpg",
+          "/images/BOGOTA/TOURS/MUSEO DEL ORO/CARD/images (2).jpg",
+          "/images/BOGOTA/TOURS/MUSEO DEL ORO/GALERIA/c6.jpg",
+          "/images/BOGOTA/TOURS/MUSEO DEL ORO/GALERIA/images (1).jpg",
+          "/images/BOGOTA/TOURS/MUSEO DEL ORO/GALERIA/images (3).jpg",
+          "/images/BOGOTA/TOURS/MUSEO DEL ORO/GALERIA/museo-del-oro-mo-salas-exposicion-permanente-2022-640x400.jpg"
+        )
+      ])
     ),
-    recommendations: ["Ideal combinar con La Candelaria", "Llevar documento de identidad", "Revisar restricciones por eventos publicos"],
-    keywords: ["Plaza de Bolivar", "Catedral Primada", "Capitolio Nacional"]
+    videoUrl: "https://www.youtube.com/watch?v=gdCWxdcsZoU",
+    // TODO: agregar soporte para videos multiples y usar tambien https://www.youtube.com/watch?v=KQ2lEtGiv8M y https://www.youtube.com/watch?v=XeFXeN7t6Uk.
+    recommendations: [
+      "Otros museos disponibles bajo solicitud, sujetos a horario y disponibilidad: Museo Nacional, Museo Banco de la Republica, Museo de la Policia, Museo Botero, Planetario (no incluidos en el precio base)"
+    ],
+    keywords: ["Centro Historico Bogota", "La Candelaria", "Museo del Oro", "Plaza de Bolivar"]
   },
   {
-    id: "bog-museo-oro",
+    id: "bog-gran-san-victorino",
     citySlug: "bogota",
-    name: "Museo del Oro",
-    slug: "museo-del-oro",
+    name: "Tour Compras Gran San Victorino",
+    slug: "gran-san-victorino",
     description:
-      "Experiencia cultural para conocer colecciones prehispanicas, piezas de orfebreria y relatos que conectan el patrimonio indigena con la historia de Colombia.",
-    includes: ["Transporte privado", "Espera coordinada", "Tiempo libre en el museo", "Recomendaciones de recorrido"],
-    excludes: ["Entrada al museo", "Guia interno", "Alimentacion"],
+      "Descubre el corazon comercial de Bogota con una experiencia disenada para quienes buscan las mejores oportunidades de compra. Recorre Gran San Victorino y sus principales zonas comerciales con transporte comodo y seguro, acceso a tiendas con precios de fabrica y mayoristas, y una amplia oferta de moda, calzado, accesorios, tecnologia y articulos para el hogar.",
+    includes: [
+      "Transporte comodo y seguro durante todo el recorrido",
+      "Visita a Gran San Victorino y zonas comerciales aledanas (incluye Centro Comercial Lo Nuestro)",
+      "Acceso a tiendas con precios de fabrica y mayoristas",
+      "Tiempo libre para compras",
+      "Coordinacion y acompanamiento"
+    ],
+    excludes: ["Compras personales", "Alimentacion"],
     duration: "3 horas",
-    schedules: ["10:00", "14:00"],
-    basePrice: 90000,
+    schedules: ["09:00", "13:00"],
+    basePrice: 130000,
     pricingMode: "per-person",
     minimumPassengers: 2,
-    heroImage: localImage("/images/BOGOTA/TOURS/MUSEO DEL ORO/HERO/images (1).jpg"),
-    cardImage: localImage("/images/BOGOTA/TOURS/MUSEO DEL ORO/CARD/images (2).jpg"),
+    // TODO: reemplazar placeholder por fotos reales de Gran San Victorino.
+    heroImage: localImage("/images/BOGOTA/TOURS/CITY TOUR BOGOTA/GALERIA/1.jpg"),
+    cardImage: localImage("/images/BOGOTA/TOURS/CITY TOUR BOGOTA/CARD/33860894418_cbc353dd66_b.jpg"),
     gallery: gallery(
-      "/images/BOGOTA/TOURS/MUSEO DEL ORO/GALERIA/c6.jpg",
-      "/images/BOGOTA/TOURS/MUSEO DEL ORO/GALERIA/images (1).jpg",
-      "/images/BOGOTA/TOURS/MUSEO DEL ORO/GALERIA/images (3).jpg",
-      "/images/BOGOTA/TOURS/MUSEO DEL ORO/GALERIA/museo-del-oro-mo-salas-exposicion-permanente-2022-640x400.jpg"
+      "/images/BOGOTA/TOURS/CITY TOUR BOGOTA/GALERIA/1.jpg",
+      "/images/BOGOTA/TOURS/CITY TOUR BOGOTA/GALERIA/53189280960_f52f80db0e_z.jpg",
+      "/images/BOGOTA/TOURS/CITY TOUR BOGOTA/GALERIA/el-museo-de-bogota-_0.jpg"
     ),
-    recommendations: ["Verificar dias de apertura", "Reservar tiempo para la sala de ofrendas", "Combinar con Chorro de Quevedo"],
-    keywords: ["Museo del Oro Bogota", "colecciones prehispanicas", "tour cultural Bogota"]
+    videoUrl: "https://www.youtube.com/shorts/LeW1XJihASg",
+    recommendations: ["Hora adicional tiene costo extra (informativo, consultar tarifa con el equipo antes de reservar)"],
+    keywords: ["Gran San Victorino", "compras Bogota", "mayoristas Bogota"]
   },
   {
     id: "bog-zona-t",
@@ -649,12 +760,17 @@ export const tours: Tour[] = [
     name: "Zona T",
     slug: "zona-t",
     description:
-      "Salida privada hacia una de las zonas mas activas de Bogota para vida nocturna, restaurantes, compras, cocteleria y gastronomia.",
-    includes: ["Transporte privado", "Espera del conductor", "Recogida segura", "Recomendaciones por tipo de plan"],
+      "Descubre uno de los sectores mas exclusivos y vibrantes de Bogota. Recorre la reconocida Zona T, un destino que combina gastronomia, moda, entretenimiento y vida urbana en un ambiente moderno y sofisticado.",
+    includes: [
+      "Transporte comodo y seguro",
+      "Visita a la Zona T y sus principales atractivos",
+      "Recorrido comercial, gastronomico y de entretenimiento",
+      "Tiempo libre"
+    ],
     excludes: ["Consumos", "Reservas en restaurantes", "Entradas a bares o clubes"],
     duration: "4 horas",
     schedules: ["17:00", "19:00", "21:00"],
-    basePrice: 85000,
+    basePrice: 90000,
     pricingMode: "per-person",
     minimumPassengers: 2,
     heroImage: localImage("/images/BOGOTA/TOURS/ZONA T/HERO/zona-rosa.jpg"),
@@ -664,6 +780,7 @@ export const tours: Tour[] = [
       "/images/BOGOTA/TOURS/ZONA T/GALERIA/caption.jpg",
       "/images/BOGOTA/TOURS/ZONA T/GALERIA/images (2).jpg"
     ),
+    videoUrl: "https://www.youtube.com/watch?v=hdSsGqh888A",
     recommendations: ["Reservar restaurante con anticipacion", "Llevar documento", "Confirmar hora de regreso"],
     keywords: ["Zona T Bogota", "vida nocturna Bogota", "restaurantes Bogota"]
   },
@@ -674,11 +791,17 @@ export const tours: Tour[] = [
     slug: "guatavita",
     description:
       "Tour privado de naturaleza hacia la Laguna de Guatavita, escenario de la leyenda de El Dorado y uno de los paisajes mas especiales de Cundinamarca.",
-    includes: ["Transporte privado", "Peajes", "Tiempo estimado de caminata", "Espera del conductor", "Paradas fotograficas"],
-    excludes: ["Entrada a la laguna", "Alimentacion", "Guia local obligatorio si aplica"],
+    includes: [
+      "Transporte privado (hotel-tour-hotel)",
+      "Guia turistico ingles-espanol",
+      "Entradas a la Laguna de Guatavita y Casa Loca",
+      "Visita opcional sin costo al centro historico de Guatavita",
+      "Logistica y acompanamiento"
+    ],
+    excludes: ["Alimentacion", "Gastos no especificados"],
     duration: "8 horas",
     schedules: ["07:00"],
-    basePrice: 225000,
+    basePrice: 290000,
     pricingMode: "per-person",
     minimumPassengers: 2,
     heroImage: localImage("/images/BOGOTA/TOURS/LAGUNA DE GUATAVITA/HERO/ricardo-cifuentes-t-4xjoKWv3Vhs-unsplash.jpg"),
@@ -688,7 +811,8 @@ export const tours: Tour[] = [
       "/images/BOGOTA/TOURS/LAGUNA DE GUATAVITA/GALERIA/images (2).jpg",
       "/images/BOGOTA/TOURS/LAGUNA DE GUATAVITA/GALERIA/photo-1707073687016-7e500a79b5c3.avif"
     ),
-    recommendations: ["Llevar chaqueta impermeable", "Usar zapatos de caminata", "Considerar altura y clima frio"],
+    videoUrl: "https://www.youtube.com/watch?v=A79x92bGW_0",
+    recommendations: ["Descuentos en restaurantes y tiendas de souvenirs aliados"],
     keywords: ["Laguna de Guatavita", "El Dorado", "tour Guatavita desde Bogota"]
   },
   {
@@ -697,12 +821,28 @@ export const tours: Tour[] = [
     name: "Catedral de Sal de Zipaquira",
     slug: "catedral-de-sal",
     description:
-      "Experiencia privada hacia la Catedral de Sal de Zipaquira, una obra subterranea que combina historia, arquitectura, espiritualidad e ingenieria.",
-    includes: ["Transporte privado", "Peajes", "Espera del conductor", "Tiempo libre en el parque"],
-    excludes: ["Entradas", "Almuerzo"],
+      "La Catedral de Sal de Zipaquira es considerada la primera maravilla de Colombia. Construida en el interior de una mina de sal, a 180 metros bajo tierra, combina arquitectura, espiritualidad y arte.",
+    includes: [
+      "Pasaporte basico de entrada",
+      "Audioguia",
+      "Salmuera 4DX",
+      "Wifi",
+      "Proyeccion de mapping",
+      "Cortometraje 3D Nucuma",
+      "Tren de salida",
+      "Caminata Huellas de Sal",
+      "Museo Arqueologico",
+      "Museo Monumental 180",
+      "Naves de la Catedral",
+      "Sendero Ecologico",
+      "Nartex",
+      "Cupula",
+      "Espejo de Agua"
+    ],
+    excludes: ["Almuerzo", "Gastos no especificados"],
     duration: "7 horas",
     schedules: ["08:00"],
-    basePrice: 280000,
+    basePrice: 400000,
     pricingMode: "per-person",
     minimumPassengers: 2,
     heroImage: localImage("/images/BOGOTA/TOURS/CATEDRAL DE SAL ZIPAQUIRA/HERO/willian-reis-TRo6jRvNMY0-unsplash.jpg"),
@@ -713,8 +853,47 @@ export const tours: Tour[] = [
       "/images/BOGOTA/TOURS/CATEDRAL DE SAL ZIPAQUIRA/GALERIA/images (1).jpg",
       "/images/BOGOTA/TOURS/CATEDRAL DE SAL ZIPAQUIRA/GALERIA/images (2).jpg"
     ),
+    videoUrl: "https://www.youtube.com/watch?v=jPzaTFiwkFE",
     recommendations: ["Comprar entradas con anticipacion", "Llevar abrigo", "Combinar con centro historico de Zipaquira"],
     keywords: ["Catedral de Sal de Zipaquira", "tour Zipaquira", "experiencia subterranea"]
+  },
+  {
+    id: "bog-jaime-duque",
+    citySlug: "bogota",
+    name: "Tour Parque Jaime Duque",
+    slug: "parque-jaime-duque",
+    description:
+      "Visita en recorrido guiado y todo incluido el parque tematico mas grande de Colombia, con escenarios historicos, arquitectonicos, tecnologicos y ambientalistas. Informacion educativa y divertida para todas las edades.",
+    includes: [
+      "Replica del Taj Mahal",
+      "Bioparque Wakata (200+ especies)",
+      "Tren panoramico",
+      "Bicicletas aereas",
+      "Castillo Medieval",
+      "Troncos acuaticos",
+      "Las 7 maravillas del Mundo Antiguo",
+      "Aviario con el mapa de Colombia",
+      "Transporte privado (hotel-tour-hotel)",
+      "Guia ingles-espanol",
+      "Logistica y acompanamiento"
+    ],
+    excludes: ["Tren de los Andes", "Bicicletas de Ecoparque Sabana"],
+    duration: "1 hora y media aproximadamente desde Bogota",
+    schedules: ["08:00"],
+    basePrice: 260000,
+    pricingMode: "per-person",
+    minimumPassengers: 2,
+    // TODO: reemplazar placeholder por fotos reales del Parque Jaime Duque.
+    heroImage: localImage("/images/BOGOTA/TOURS/CITY TOUR BOGOTA/GALERIA/1.jpg"),
+    cardImage: localImage("/images/BOGOTA/TOURS/CITY TOUR BOGOTA/CARD/33860894418_cbc353dd66_b.jpg"),
+    gallery: gallery(
+      "/images/BOGOTA/TOURS/CITY TOUR BOGOTA/GALERIA/1.jpg",
+      "/images/BOGOTA/TOURS/CITY TOUR BOGOTA/GALERIA/53189280960_f52f80db0e_z.jpg",
+      "/images/BOGOTA/TOURS/CITY TOUR BOGOTA/GALERIA/el-museo-de-bogota-_0.jpg"
+    ),
+    videoUrl: "https://www.youtube.com/watch?v=qeg2CLqE03A",
+    recommendations: ["Sin costo adicional se visita el municipio de Sopo, con opcion de conocer la Cabana de Alpina"],
+    keywords: ["Parque Jaime Duque", "tour familiar Bogota", "Tocancipa"]
   }
 ];
 

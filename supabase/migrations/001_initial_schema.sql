@@ -281,8 +281,9 @@ values
 ('bog-monserrate', 'bogota', 'Monserrate', 'monserrate', 'Traslado privado para visitar el cerro mas emblematico.', '["Transporte", "Espera coordinada"]', '["Ticket funicular/teleferico", "Alimentacion"]', '3 horas', '["08:00", "15:00"]', 31000000, '[]'),
 ('bog-guatavita', 'bogota', 'Guatavita', 'guatavita', 'Laguna sagrada, pueblo blanco y ruta privada desde Bogota.', '["Transporte", "Peajes", "Agua"]', '["Entrada a la laguna", "Alimentacion"]', '8 horas', '["07:00"]', 78000000, '[]'),
 ('bog-catedral-sal', 'bogota', 'Catedral de Sal', 'catedral-de-sal', 'Visita privada a Zipaquira y su Catedral de Sal.', '["Transporte", "Peajes", "Espera"]', '["Entradas", "Almuerzo"]', '7 horas', '["08:00"]', 69000000, '[]'),
-('bog-la-candelaria', 'bogota', 'La Candelaria', 'la-candelaria', 'Historia, arquitectura y cultura en el centro historico.', '["Transporte privado", "Paradas culturales"]', '["Entradas", "Guia especializado"]', '4 horas', '["09:00", "14:00"]', 42000000, '[]'),
-('bog-museo-oro', 'bogota', 'Museo del Oro', 'museo-del-oro', 'Traslado privado para una visita cultural al Museo del Oro.', '["Transporte", "Espera coordinada"]', '["Entradas", "Guia interno"]', '3 horas', '["10:00", "14:00"]', 29000000, '[]')
+('bog-centro-historico-candelaria', 'bogota', 'Tour Centro Historico La Candelaria', 'centro-historico-candelaria', 'Historia, arquitectura y patrimonio en el centro historico.', '["Avenida Jimenez", "Plaza de Bolivar", "Entrada al Museo del Oro"]', '["Museos adicionales", "Alimentacion"]', '4 horas', '["09:00", "14:00"]', 13000000, '[]'),
+('bog-gran-san-victorino', 'bogota', 'Tour Compras Gran San Victorino', 'gran-san-victorino', 'Recorrido privado por el corazon comercial de Bogota.', '["Transporte", "Tiendas mayoristas", "Tiempo libre"]', '["Compras personales", "Alimentacion"]', '3 horas', '["09:00", "13:00"]', 13000000, '[]'),
+('bog-jaime-duque', 'bogota', 'Tour Parque Jaime Duque', 'parque-jaime-duque', 'Recorrido guiado al parque tematico mas grande de Colombia.', '["Transporte", "Guia", "Logistica"]', '["Tren de los Andes", "Bicicletas de Ecoparque Sabana"]', '1 hora y media aproximadamente desde Bogota', '["08:00"]', 26000000, '[]')
 on conflict (id) do nothing;
 
 insert into public.faq (service_id, question, answer, sort_order) values

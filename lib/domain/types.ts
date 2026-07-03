@@ -32,6 +32,7 @@ export type City = {
   image: string;
   heroImage?: string;
   heroGallery?: string[];
+  videoUrl?: string;
   serviceIds?: string[];
   active: boolean;
 };
@@ -52,6 +53,7 @@ export type Tour = {
   heroImage?: string;
   cardImage?: string;
   gallery: string[];
+  videoUrl?: string;
   recommendations?: string[];
   keywords?: string[];
   featured?: boolean;
