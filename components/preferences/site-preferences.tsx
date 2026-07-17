@@ -17,13 +17,18 @@ export function PreferenceSwitcher() {
   const [language, setLanguage] = useLanguage();
 
   return (
-    <div className="flex items-center gap-1 rounded-md border bg-background p-1 text-xs text-foreground">
+    <div
+      className="flex items-center gap-1 rounded-md border bg-background p-1 text-xs text-foreground"
+      aria-label={language === "EN" ? "Language and currency preferences" : "Preferencias de idioma y moneda"}
+    >
       {(["ES", "EN"] as const).map((value) => (
         <button
           key={value}
           type="button"
           onClick={() => setLanguage(value)}
-          className={language === value ? "rounded bg-primary px-2 py-1 text-primary-foreground" : "px-2 py-1"}
+          aria-label={value === "ES" ? "Español" : "English"}
+          aria-pressed={language === value}
+          className={language === value ? "rounded bg-primary px-2 py-1 text-primary-foreground" : "rounded px-2 py-1 hover:bg-muted"}
         >
           {value}
         </button>
@@ -34,7 +39,9 @@ export function PreferenceSwitcher() {
           key={value}
           type="button"
           onClick={() => setCurrency(value)}
-          className={currency === value ? "rounded bg-primary px-2 py-1 text-primary-foreground" : "px-2 py-1"}
+          aria-label={value === "COP" ? "Pesos colombianos" : "Dólares estadounidenses"}
+          aria-pressed={currency === value}
+          className={currency === value ? "rounded bg-primary px-2 py-1 text-primary-foreground" : "rounded px-2 py-1 hover:bg-muted"}
         >
           {value}
         </button>

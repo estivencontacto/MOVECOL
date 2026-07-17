@@ -1,4 +1,5 @@
-import { createHash, createHmac, timingSafeEqual } from "crypto";
+import { createHash, randomBytes, timingSafeEqual } from "crypto";
+import { wompiTransactionSchema } from "@/lib/domain/schemas";
 
 const checkoutBaseUrl = "https://checkout.wompi.co/p/";
 const wompiApiBaseUrls = {
@@ -39,17 +40,24 @@ export async function buildWompiCheckoutUrl({
   }
 
   const currency = "COP";
-  const redirectUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://movecolombia.co"}/pago-exitoso?reservation=${reservationId}`;
+  if (!Number.isSafeInteger(amountInCents) || amountInCents <= 0) {
+    throw new Error("Wompi checkout amount must be a positive integer.");
+  }
+
+  const appUrl = getAppUrl();
+  const redirectUrl = new URL("/pago-exitoso", appUrl);
+  redirectUrl.searchParams.set("reservation", reservationId);
+  const paymentReference = createPaymentReference(reservationId);
   const signature = createHash("sha256")
-    .update(`${reservationId}${amountInCents}${currency}${integritySecret}`)
+    .update(`${paymentReference}${amountInCents}${currency}${integritySecret}`)
     .digest("hex");
 
   const params = new URLSearchParams({
     "public-key": publicKey,
     currency,
     "amount-in-cents": String(amountInCents),
-    reference: reservationId,
-    "redirect-url": redirectUrl
+    reference: paymentReference,
+    "redirect-url": redirectUrl.toString()
   });
 
   params.set("signature:integrity", signature);
@@ -72,16 +80,21 @@ export async function buildWompiCheckoutUrl({
 }
 
 export async function getWompiTransaction(transactionId: string) {
-  const privateKey = process.env.WOMPI_PRIVATE_KEY;
+  const publicKey = process.env.WOMPI_PUBLIC_KEY;
 
-  if (!privateKey) {
-    console.error("Wompi transaction lookup skipped: WOMPI_PRIVATE_KEY is not configured.");
+  if (!publicKey) {
+    console.error("Wompi transaction lookup skipped: WOMPI_PUBLIC_KEY is not configured.");
     return null;
   }
 
-  const response = await fetch(`${getWompiApiBaseUrl()}/transactions/${transactionId}`, {
+  if (!/^[a-z0-9_-]{1,160}$/i.test(transactionId)) {
+    console.error("Wompi transaction lookup rejected: invalid transaction id.");
+    return null;
+  }
+
+  const response = await fetch(`${getWompiApiBaseUrl()}/transactions/${encodeURIComponent(transactionId)}`, {
     headers: {
-      Authorization: `Bearer ${privateKey}`
+      Authorization: `Bearer ${publicKey}`
     },
     cache: "no-store"
   });
@@ -94,8 +107,14 @@ export async function getWompiTransaction(transactionId: string) {
     return null;
   }
 
-  const payload = (await response.json()) as { data?: WompiTransaction };
-  return payload.data ?? null;
+  const payload = (await response.json()) as { data?: unknown };
+  const parsed = wompiTransactionSchema.safeParse(payload.data);
+  if (!parsed.success) {
+    console.error("Wompi transaction lookup returned an invalid payload", { transactionId });
+    return null;
+  }
+
+  return parsed.data;
 }
 
 export function verifyWompiWebhook(rawBody: string, checksumHeader?: string | null) {
@@ -105,23 +124,24 @@ export function verifyWompiWebhook(rawBody: string, checksumHeader?: string | nu
     return false;
   }
 
-  const wompiVerification = verifyWompiEventChecksum(rawBody, secret, checksumHeader);
+  return verifyWompiEventChecksum(rawBody, secret, checksumHeader);
+}
 
-  if (wompiVerification !== null) {
-    return wompiVerification;
-  }
-
-  return verifyLegacyWebhookSignature(rawBody, secret, checksumHeader);
+export function getReservationIdFromWompiReference(reference: string) {
+  const reservationId = reference.split(".", 1)[0];
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    reservationId
+  )
+    ? reservationId
+    : null;
 }
 
 function getWompiApiBaseUrl() {
   const publicKey = process.env.WOMPI_PUBLIC_KEY ?? "";
-  const privateKey = process.env.WOMPI_PRIVATE_KEY ?? "";
 
   if (
     process.env.WOMPI_ENV === "production" ||
-    publicKey.startsWith("pub_prod_") ||
-    privateKey.startsWith("prv_prod_")
+    publicKey.startsWith("pub_prod_")
   ) {
     return wompiApiBaseUrls.production;
   }
@@ -145,7 +165,7 @@ function verifyWompiEventChecksum(rawBody: string, secret: string, checksumHeade
       (typeof payload.signature?.checksum === "string" ? payload.signature.checksum : null);
 
     if (!Array.isArray(properties) || !checksum) {
-      return null;
+      return false;
     }
 
     const signedValues = properties
@@ -161,15 +181,6 @@ function verifyWompiEventChecksum(rawBody: string, secret: string, checksumHeade
   } catch {
     return false;
   }
-}
-
-function verifyLegacyWebhookSignature(rawBody: string, secret: string, signatureHeader?: string | null) {
-  if (!signatureHeader) return false;
-
-  const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
-  const actual = signatureHeader.replace(/^sha256=/i, "");
-
-  return safeCompareHex(expected, actual);
 }
 
 function getPathValue(source: unknown, propertyPath: string): unknown {
@@ -197,9 +208,31 @@ function normalizePhone(value?: string) {
 }
 
 function safeCompareHex(expected: string, actual: string) {
+  if (!/^[a-f0-9]{64}$/i.test(expected) || !/^[a-f0-9]{64}$/i.test(actual)) {
+    return false;
+  }
+
   try {
-    return timingSafeEqual(Buffer.from(expected.toLowerCase(), "hex"), Buffer.from(actual.toLowerCase(), "hex"));
+    return timingSafeEqual(
+      Buffer.from(expected.toLowerCase(), "hex"),
+      Buffer.from(actual.toLowerCase(), "hex")
+    );
   } catch {
     return false;
   }
+}
+
+function createPaymentReference(reservationId: string) {
+  return `${reservationId}.${randomBytes(8).toString("hex")}`;
+}
+
+function getAppUrl() {
+  const configured = process.env.NEXT_PUBLIC_APP_URL ?? "https://movecolombia.co";
+  const url = new URL(configured);
+
+  if (process.env.NODE_ENV === "production" && url.protocol !== "https:") {
+    throw new Error("NEXT_PUBLIC_APP_URL must use HTTPS in production.");
+  }
+
+  return url;
 }

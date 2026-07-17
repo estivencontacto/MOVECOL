@@ -4,21 +4,30 @@ import { isSupabaseAdminConfigured } from "@/lib/env";
 import { sendReservationEmail } from "@/lib/services/email";
 import { createReservation } from "@/lib/services/reservations";
 import { enforceRateLimit } from "@/lib/services/rate-limit";
+import { enforceTrustedOrigin, readJsonBody } from "@/lib/services/request-security";
 import { buildDepartureAt, getRouteEstimateResult } from "@/lib/services/routes";
 import { queueWhatsappConfirmation } from "@/lib/services/whatsapp";
 import { buildWompiCheckoutUrl, isWompiCheckoutConfigured } from "@/lib/wompi";
+import { company } from "@/lib/legal/company";
+import { isQuoteOnlyVehicle } from "@/lib/domain/vehicle-rules";
+import { buildSpecialVehicleWhatsappUrl } from "@/lib/services/whatsapp-quote";
 
 export async function POST(request: Request) {
   const limited = enforceRateLimit(request, {
     key: "reservations",
-    limit: 6,
-    windowMs: 60_000
+    limit: 5,
+    windowMs: 10 * 60_000
   });
 
   if (limited) return limited;
 
-  const json = await request.json();
-  const parsed = reservationSchema.safeParse(json);
+  const invalidOrigin = enforceTrustedOrigin(request);
+  if (invalidOrigin) return invalidOrigin;
+
+  const body = await readJsonBody(request);
+  if (!body.ok) return body.response;
+
+  const parsed = reservationSchema.safeParse(body.data);
 
   if (!parsed.success) {
     return NextResponse.json(
@@ -27,8 +36,22 @@ export async function POST(request: Request) {
     );
   }
 
+  if (parsed.data.termsVersion !== company.termsVersion) {
+    return NextResponse.json(
+      { error: "Los términos fueron actualizados. Recarga la página y vuelve a aceptar." },
+      { status: 409 }
+    );
+  }
+
   try {
-    const reservationInput = await enrichRouteDistance(parsed.data);
+    const { input: reservationInput, route } = await enrichRouteDistance(parsed.data);
+
+    if (isQuoteOnlyVehicle(reservationInput.vehicleType)) {
+      return NextResponse.json(
+        { quoteUrl: buildSpecialVehicleWhatsappUrl(reservationInput, route) },
+        { status: 200 }
+      );
+    }
 
     if (!isSupabaseAdminConfigured()) {
       const demoId = crypto.randomUUID();
@@ -88,11 +111,6 @@ export async function POST(request: Request) {
 }
 
 async function enrichRouteDistance(input: ReservationInput) {
-  const needsRouteEstimate =
-    !input.tourId && (input.serviceId === "airport-transfer" || input.serviceId === "transfers");
-
-  if (!needsRouteEstimate) return input;
-
   const result = await getRouteEstimateResult({
     origin: input.pickup,
     destination: input.dropoff,
@@ -102,17 +120,26 @@ async function enrichRouteDistance(input: ReservationInput) {
   });
 
   if (!result.ok) {
-    throw new Error(result.error.message);
+    const routeDeterminesPrice =
+      input.serviceId === "airport-transfer" || input.serviceId === "transfers";
+    if (routeDeterminesPrice && !isQuoteOnlyVehicle(input.vehicleType)) {
+      throw new Error(result.error.message);
+    }
+
+    return { input, route: null };
   }
 
   return {
-    ...input,
-    distanceKm: Number(result.route.distanceKm.toFixed(1)),
-    notes: [
-      input.notes,
-      `Ruta Google Maps: ${result.route.distanceKm.toFixed(1)} km${result.route.durationText ? `, ${result.route.durationText}` : ""}.`
-    ]
-      .filter(Boolean)
-      .join("\n")
+    input: {
+      ...input,
+      distanceKm: Number(result.route.distanceKm.toFixed(1)),
+      notes: [
+        input.notes,
+        `Ruta Google Maps: ${result.route.distanceKm.toFixed(1)} km${result.route.durationText ? `, ${result.route.durationText}` : ""}.`
+      ]
+        .filter(Boolean)
+        .join("\n")
+    },
+    route: result.route
   };
 }

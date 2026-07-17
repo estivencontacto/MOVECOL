@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
+import { enforceRateLimit } from "@/lib/services/rate-limit";
 
-export async function GET() {
+export async function GET(request: Request) {
+  const limited = enforceRateLimit(request, {
+    key: "exchange-rate",
+    limit: 60,
+    windowMs: 60_000
+  });
+  if (limited) return limited;
+
   const fallbackRate = Number(process.env.USD_COP_FALLBACK_RATE ?? 4000);
 
   const openRate = await getOpenExchangeRate();

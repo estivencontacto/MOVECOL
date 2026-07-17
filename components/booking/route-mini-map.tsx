@@ -3,6 +3,7 @@
 import { Loader2, MapPinned } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { cities } from "@/lib/data/catalog";
 import {
   type GoogleDirectionsRenderer,
   type GoogleDirectionsService,
@@ -22,21 +23,16 @@ type RouteMiniMapProps = {
   originPlaceId?: string;
 };
 
-const cityCenters: Record<string, { lat: number; lng: number }> = {
-  bogota: { lat: 4.711, lng: -74.0721 },
-  medellin: { lat: 6.2442, lng: -75.5812 }
-};
-
 const routeCopy = {
   ES: {
-    pending: "Ruta pendiente",
-    loading: "Trazando ruta...",
+    pending: "Selecciona el origen y el destino para visualizar el recorrido.",
+    loading: "Calculando ruta",
     error: "Mapa no disponible",
     ready: "Ruta Google Maps"
   },
   EN: {
-    pending: "Route pending",
-    loading: "Drawing route...",
+    pending: "Select the origin and destination to view the route.",
+    loading: "Calculating route",
     error: "Map unavailable",
     ready: "Google Maps route"
   }
@@ -64,7 +60,10 @@ export function RouteMiniMap({
     (originPlaceId || origin.trim().length >= 4) && (destinationPlaceId || destination.trim().length >= 4)
   );
 
-  const center = useMemo(() => cityCenters[cityId] ?? cityCenters.medellin, [cityId]);
+  const center = useMemo(
+    () => cities.find((city) => city.id === cityId)?.mapCenter ?? cities[0].mapCenter,
+    [cityId]
+  );
 
   useEffect(() => {
     if (!maps || !containerRef.current || mapRef.current) return;
@@ -96,6 +95,13 @@ export function RouteMiniMap({
       directionsServiceRef.current = null;
     };
   }, [center, maps]);
+
+  useEffect(() => {
+    if (mapRef.current && !hasRouteInput) {
+      mapRef.current.setCenter(center);
+      mapRef.current.setZoom(11);
+    }
+  }, [center, hasRouteInput]);
 
   useEffect(() => {
     if (!enabled || !hasRouteInput || !maps || !directionsServiceRef.current || !directionsRendererRef.current) {
@@ -132,14 +138,14 @@ export function RouteMiniMap({
     };
   }, [departureAt, destination, destinationPlaceId, enabled, hasRouteInput, maps, origin, originPlaceId]);
 
-  if (!apiKey || !enabled) {
-    return null;
-  }
-
-  const visibleStatus = status === "loading" ? "loading" : routeStatus;
+  const visibleStatus = !apiKey || status === "error"
+    ? "error"
+    : status === "loading"
+      ? "loading"
+      : routeStatus;
 
   return (
-    <div className="relative min-h-[220px] overflow-hidden rounded-lg border bg-muted">
+    <div className="relative min-h-[220px] overflow-hidden rounded-lg border bg-muted" aria-live="polite">
       <div ref={containerRef} className="absolute inset-0" />
       {visibleStatus !== "ready" ? (
         <div className="absolute inset-0 flex items-center justify-center bg-background/82 px-6 text-center backdrop-blur-sm">

@@ -48,7 +48,7 @@ export function TourDetail({
   const physicalDemand = getTourPhysicalDemand(tour);
   const routePreview = getTourRoutePreview(city.slug, tour.slug, tour.name);
   const priceLabel =
-    tour.pricingMode === "global" ? "Tarifa global del servicio" : "Tarifa por persona, minimo 2 pasajeros";
+    tour.pricingMode === "global" ? "Tarifa global del servicio" : "Tarifa por persona, mínimo 2 pasajeros";
 
   return (
     <>
@@ -121,7 +121,7 @@ export function TourDetail({
             <div className="mt-5 space-y-4">
               {[
                 ["Servicio privado", "Vehiculo y conductor coordinados para tu grupo."],
-                ["Ritmo flexible", "Paradas y tiempos ajustados a la operacion del dia."],
+                ["Ritmo flexible", "Paradas y tiempos ajustados a la operación del día."],
                 ["Confirmacion directa", "El equipo MOVE valida disponibilidad antes de operar."]
               ].map(([title, description]) => (
                 <div key={title} className="rounded-md bg-primary-foreground/10 p-4">

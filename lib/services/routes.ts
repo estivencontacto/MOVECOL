@@ -110,11 +110,14 @@ export async function getRouteEstimateResult({
     };
 
     if (data.status && data.status !== "OK") {
+      console.error("Google Maps rejected a route estimate", {
+        status: data.status
+      });
       return {
         ok: false,
         error: {
           code: "google-error",
-          message: data.error_message ?? "Google Maps rechazo el calculo de ruta.",
+          message: "Google Maps rechazó el cálculo de ruta.",
           googleStatus: data.status
         }
       };

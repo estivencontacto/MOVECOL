@@ -1,18 +1,24 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { estimateDistancePricing } from "@/lib/services/pricing";
+import { vehicleTypes } from "@/lib/domain/vehicle-rules";
+import { estimateReservationPricing } from "@/lib/services/pricing";
+import { enforceRateLimit } from "@/lib/services/rate-limit";
+import { enforceTrustedOrigin, readJsonBody } from "@/lib/services/request-security";
 import { getRouteEstimateResult, type RouteEstimateErrorCode } from "@/lib/services/routes";
 
 const routePricingSchema = z.object({
-  cityId: z.string().min(1),
-  serviceId: z.string().min(1),
-  origin: z.string().trim().optional(),
-  destination: z.string().trim().optional(),
-  originPlaceId: z.string().trim().optional(),
-  destinationPlaceId: z.string().trim().optional(),
-  vehicleType: z.enum(["sedan", "suv", "van", "bus"]),
+  cityId: z.string().trim().min(1).max(80).regex(/^[a-z0-9][a-z0-9_-]*$/i),
+  serviceId: z.string().trim().min(1).max(80).regex(/^[a-z0-9][a-z0-9_-]*$/i),
+  origin: z.string().trim().max(300).refine(withoutMarkup).optional(),
+  destination: z.string().trim().max(300).refine(withoutMarkup).optional(),
+  originPlaceId: z.string().trim().max(255).regex(/^[a-z0-9_-]*$/i).optional(),
+  destinationPlaceId: z.string().trim().max(255).regex(/^[a-z0-9_-]*$/i).optional(),
+  tourId: z.string().trim().max(80).regex(/^[a-z0-9_-]*$/i).optional(),
+  hours: z.coerce.number().min(1).max(24).optional(),
+  promoCode: z.string().trim().max(40).regex(/^[a-z0-9_-]*$/i).optional(),
+  vehicleType: z.enum(vehicleTypes),
   passengers: z.coerce.number().int().min(2).max(50).optional(),
-  departureAt: z.string().optional()
+  departureAt: z.string().datetime({ offset: true }).max(40).optional()
 }).superRefine((value, context) => {
   if (!value.originPlaceId && (!value.origin || value.origin.length < 3)) {
     context.addIssue({
@@ -33,19 +39,24 @@ const routePricingSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    const payload = await request.json();
-    const parsed = routePricingSchema.safeParse(payload);
+    const limited = enforceRateLimit(request, {
+      key: "route-pricing",
+      limit: 30,
+      windowMs: 60_000
+    });
+    if (limited) return limited;
+
+    const invalidOrigin = enforceTrustedOrigin(request);
+    if (invalidOrigin) return invalidOrigin;
+
+    const body = await readJsonBody(request);
+    if (!body.ok) return body.response;
+
+    const parsed = routePricingSchema.safeParse(body.data);
 
     if (!parsed.success) {
       return NextResponse.json(
         { error: "Datos invalidos para calcular la ruta", issues: parsed.error.flatten() },
-        { status: 422 }
-      );
-    }
-
-    if (parsed.data.serviceId !== "airport-transfer" && parsed.data.serviceId !== "transfers") {
-      return NextResponse.json(
-        { error: "El servicio seleccionado no se liquida por ruta." },
         { status: 422 }
       );
     }
@@ -69,11 +80,15 @@ export async function POST(request: Request) {
       );
     }
 
-    const pricing = estimateDistancePricing({
+    const pricing = estimateReservationPricing({
       cityId: parsed.data.cityId,
       serviceId: parsed.data.serviceId,
+      tourId: parsed.data.tourId,
       vehicleType: parsed.data.vehicleType,
-      distanceKm: result.route.distanceKm
+      passengers: parsed.data.passengers ?? 2,
+      hours: parsed.data.hours,
+      distanceKm: result.route.distanceKm,
+      promoCode: parsed.data.promoCode
     });
 
     return NextResponse.json({
@@ -90,6 +105,10 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+}
+
+function withoutMarkup(value: string) {
+  return !/[<>\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/.test(value);
 }
 
 function getRouteErrorStatus(code: RouteEstimateErrorCode) {

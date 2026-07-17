@@ -54,7 +54,7 @@ reutilizables y paginas generadas automaticamente para tours y servicios.
 Ver [docs/architecture.md](docs/architecture.md).
 
 Para configurar pagos reales con Wompi, webhooks, confirmacion de reservas y correos:
-[docs/wompi-setup.md](docs/wompi-setup.md).
+[docs/wompi-production-checklist.md](docs/wompi-production-checklist.md).
 
 El proyecto separa paginas publicas, flujo de reserva, administracion, esquemas
 de dominio, servicios de aplicacion, infraestructura Supabase y migraciones de
@@ -94,19 +94,22 @@ Copia `.env.example` como `.env.local` y completa las variables reales:
 ```bash
 NEXT_PUBLIC_APP_URL=https://movecolombia.co
 SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_URL=
 SUPABASE_PUBLISHABLE_KEY=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 SUPABASE_SECRET_KEY=
 SUPABASE_JWKS_URL=
 
 WOMPI_ENV=sandbox
 WOMPI_PUBLIC_KEY=
-WOMPI_PRIVATE_KEY=
 WOMPI_EVENTS_SECRET=
 WOMPI_INTEGRITY_SECRET=
+WOMPI_PRIVATE_KEY=
 
+# Opcional: habilita correos transaccionales.
 RESEND_API_KEY=
-EMAIL_FROM=MOVE Colombia <reservas@movecolombia.co>
-OPERATIONS_EMAIL=reservas@movecolombia.co
+EMAIL_FROM=MOVE Colombia <contactateconseda@gmail.com>
+OPERATIONS_EMAIL=contactateconseda@gmail.com
 WHATSAPP_BUSINESS_PHONE=
 
 GOOGLE_MAPS_API_KEY=
@@ -158,6 +161,7 @@ pnpm build
 - Restringir la llave server-side de Google Maps por API y entorno cuando sea posible.
 - Revisar webhooks de Wompi antes de pasar a produccion real.
 - Usar RLS en Supabase para proteger informacion de clientes, reservas y pagos.
+- Aplicar las reglas y practicas operativas descritas en [SECURITY.md](SECURITY.md).
 
 ## Guia De Calidad
 

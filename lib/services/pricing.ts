@@ -1,8 +1,9 @@
 import { tours } from "@/lib/data/catalog";
 import type { ReservationInput } from "@/lib/domain/schemas";
 import type { VehicleType } from "@/lib/domain/types";
+import { isQuoteOnlyVehicle } from "@/lib/domain/vehicle-rules";
 
-const COP_PER_KM = 4500;
+export const COP_PER_KM = 4500;
 const COP_PER_HOUR = 45000;
 const AIRPORT_BASE_COP = 30000;
 const PAYMENT_GATEWAY_RATE = 0.05;
@@ -12,13 +13,15 @@ const MINIMUM_BY_CITY: Record<string, number> = {
   bogota: 40000,
   medellin: 150000
 };
-const SUV_SURCHARGE_COP = 40000;
+export const SUV_SURCHARGE_COP = 40000;
+export const SIX_PASSENGER_SURCHARGE_COP = 50000;
 
 export type PriceEstimate = {
   amount: number;
   subtotal: number;
   gatewayFee: number;
   requiresAvailabilityCheck: boolean;
+  quoteOnly: boolean;
   breakdown: Array<{ label: string; amount: number }>;
 };
 
@@ -29,7 +32,11 @@ export function estimateReservationPricing(
   >
 ): PriceEstimate {
   const tour = input.tourId ? tours.find((item) => item.id === input.tourId) : null;
-  const requiresAvailabilityCheck = input.vehicleType === "van" || input.vehicleType === "bus";
+  const requiresAvailabilityCheck = isQuoteOnlyVehicle(input.vehicleType);
+
+  if (requiresAvailabilityCheck) {
+    return quoteOnlyEstimate();
+  }
 
   if (tour) {
     const passengers = Math.max(input.passengers ?? 2, tour.minimumPassengers ?? 2);
@@ -93,6 +100,10 @@ export function estimateDistancePricing({
   distanceKm: number;
   promoCode?: string;
 }): PriceEstimate {
+  if (isQuoteOnlyVehicle(vehicleType)) {
+    return quoteOnlyEstimate();
+  }
+
   const distanceAmount = Math.ceil(distanceKm) * COP_PER_KM;
   const airportBase = serviceId === "airport-transfer" && cityId === "bogota" ? AIRPORT_BASE_COP : 0;
   const minimum = MINIMUM_BY_CITY[cityId] ?? 40000;
@@ -103,7 +114,7 @@ export function estimateDistancePricing({
 
   return withGatewayFee({
     subtotal,
-    requiresAvailabilityCheck: vehicleType === "van" || vehicleType === "bus",
+    requiresAvailabilityCheck: false,
     promoCode
   });
 }
@@ -112,8 +123,10 @@ export function toCents(amount: number) {
   return Math.round(amount * 100);
 }
 
-function getVehicleSurcharge(vehicleType: VehicleType) {
-  return vehicleType === "suv" ? SUV_SURCHARGE_COP : 0;
+export function getVehicleSurcharge(vehicleType: VehicleType) {
+  if (vehicleType === "suv") return SUV_SURCHARGE_COP;
+  if (vehicleType === "six-passenger") return SIX_PASSENGER_SURCHARGE_COP;
+  return 0;
 }
 
 function withGatewayFee({
@@ -139,7 +152,19 @@ function withGatewayFee({
     subtotal: discountedSubtotal,
     gatewayFee,
     requiresAvailabilityCheck,
+    quoteOnly: false,
     breakdown
+  };
+}
+
+function quoteOnlyEstimate(): PriceEstimate {
+  return {
+    amount: 0,
+    subtotal: 0,
+    gatewayFee: 0,
+    requiresAvailabilityCheck: true,
+    quoteOnly: true,
+    breakdown: []
   };
 }
 

@@ -3,7 +3,7 @@ create extension if not exists "pgcrypto";
 create type public.user_role as enum ('admin', 'operator', 'customer');
 create type public.reservation_status as enum ('draft', 'pending_payment', 'confirmed', 'completed', 'cancelled');
 create type public.payment_status as enum ('pending', 'paid', 'cancelled', 'refunded');
-create type public.vehicle_type as enum ('sedan', 'suv', 'van', 'bus');
+create type public.vehicle_type as enum ('sedan', 'suv', 'six-passenger', 'van', 'bus');
 
 create table public.users (
   id uuid primary key references auth.users(id) on delete cascade,
@@ -69,7 +69,7 @@ create table public.vehicles (
   type public.vehicle_type not null,
   name text not null,
   capacity integer not null check (capacity > 0),
-  luggage integer not null check (luggage >= 0),
+  luggage integer check (luggage is null or luggage >= 0),
   image_url text,
   description text,
   available boolean not null default true,
@@ -263,8 +263,9 @@ insert into public.services (id, title, slug, category, description, benefits, p
 on conflict (id) do nothing;
 
 insert into public.vehicles (id, type, name, capacity, luggage, description, available) values
-('sedan-premium', 'sedan', 'Sedan Premium', 3, 2, 'Ideal para aeropuerto y ejecutivos.', true),
-('suv-executive', 'suv', 'SUV Executive', 5, 4, 'Mayor confort para familias y clientes VIP.', true),
+('sedan-premium', 'sedan', 'Sedan Premium', 4, 2, 'Ideal para aeropuerto y ejecutivos.', true),
+('suv-executive', 'suv', 'SUV Executive', 4, 4, 'Mayor confort para familias y clientes VIP.', true),
+('six-passenger', 'six-passenger', 'Vehiculo de 6 pasajeros', 6, null, 'Alternativa privada para grupos de hasta seis pasajeros.', true),
 ('van-private', 'van', 'Van Privada', 10, 8, 'Perfecta para grupos y tours.', true),
 ('bus-group', 'bus', 'Bus Ejecutivo', 35, 25, 'Eventos y grupos grandes.', true)
 on conflict (id) do nothing;

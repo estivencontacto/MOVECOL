@@ -34,7 +34,10 @@ export type GoogleMapOptions = {
   zoomControl?: boolean;
 };
 
-export type GoogleMap = unknown;
+export type GoogleMap = {
+  setCenter: (center: { lat: number; lng: number }) => void;
+  setZoom: (zoom: number) => void;
+};
 
 export type GoogleDirectionsRequest = {
   origin: string | { placeId: string };

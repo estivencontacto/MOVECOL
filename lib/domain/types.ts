@@ -18,7 +18,7 @@ export type ReservationStatus =
 
 export type PaymentStatus = "pending" | "paid" | "cancelled" | "refunded";
 
-export type VehicleType = "sedan" | "suv" | "van" | "bus";
+export type VehicleType = "sedan" | "suv" | "six-passenger" | "van" | "bus";
 
 export type City = {
   id: string;
@@ -34,6 +34,9 @@ export type City = {
   heroGallery?: string[];
   videoUrl?: string;
   serviceIds?: string[];
+  mapCenter: { lat: number; lng: number };
+  altitudeMeters: number;
+  timeZone: string;
   active: boolean;
 };
 
@@ -78,7 +81,7 @@ export type Vehicle = {
   type: VehicleType;
   name: string;
   capacity: number;
-  luggage: number;
+  luggage: number | null;
   image: string;
   description: string;
   available: boolean;

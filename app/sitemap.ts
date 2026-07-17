@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { cities, services, tours } from "@/lib/data/catalog";
 import { absoluteUrl } from "@/lib/seo";
+import { legalDocumentSlugs } from "@/lib/legal/documents";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
@@ -17,6 +18,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.9
     },
+    ...legalDocumentSlugs.map((slug) => ({
+      url: absoluteUrl(`/legal/${slug}`),
+      lastModified: now,
+      changeFrequency: "monthly" as const,
+      priority: 0.35
+    })),
     ...cities.map((city) => ({
       url: absoluteUrl(`/destinos/${city.slug}`),
       lastModified: now,

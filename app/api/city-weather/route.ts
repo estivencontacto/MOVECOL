@@ -1,9 +1,17 @@
 import { NextResponse } from "next/server";
+import { enforceRateLimit } from "@/lib/services/rate-limit";
 import { getCityWeather, isWeatherCitySlug } from "@/lib/services/weather";
 
 export const revalidate = 300;
 
 export async function GET(request: Request) {
+  const limited = enforceRateLimit(request, {
+    key: "city-weather",
+    limit: 30,
+    windowMs: 60_000
+  });
+  if (limited) return limited;
+
   const { searchParams } = new URL(request.url);
   const city = searchParams.get("city");
 

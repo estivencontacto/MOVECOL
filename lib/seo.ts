@@ -10,11 +10,11 @@ export const defaultSeo: Metadata = {
     template: "%s | MOVE Colombia"
   },
   description:
-    "Transporte privado premium, traslados aeropuerto, tours privados, turismo medico y movilidad ejecutiva en Medellin y Bogota.",
+    "Transporte privado, traslados de aeropuerto y tours personalizados en Bogotá y Medellín con atención directa de MOVE Colombia.",
   keywords: [
     "transporte privado Colombia",
-    "traslado aeropuerto Medellin",
-    "traslado aeropuerto Bogota",
+    "traslado aeropuerto Medellín",
+    "traslado aeropuerto Bogotá",
     "tours privados Colombia",
     "transporte ejecutivo"
   ],
@@ -55,7 +55,12 @@ export function absoluteUrl(path = "/") {
 }
 
 export function jsonLd(data: unknown) {
-  return JSON.stringify(data).replace(/</g, "\\u003c");
+  return JSON.stringify(data)
+    .replace(/&/g, "\\u0026")
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
 }
 
 export function cityMetadata(city: City): Metadata {
@@ -127,7 +132,7 @@ export function tourMetadata(city: City, tour: Tour): Metadata {
 export function serviceMetadata(service: Service, city?: City, image?: string): Metadata {
   const cityName = city?.name ?? "Colombia";
   const title = `${service.title} en ${cityName}`;
-  const description = `${service.description} Operacion privada con MOVE Colombia para viajeros, pacientes, familias y empresas.`;
+  const description = `${service.description} Operación privada con MOVE Colombia para viajeros, pacientes, familias y empresas.`;
   const metadataImage = image ?? service.heroImage ?? service.cardImage;
 
   return {
@@ -160,11 +165,12 @@ export function serviceMetadata(service: Service, city?: City, image?: string): 
 export function organizationSchema() {
   return {
     "@context": "https://schema.org",
-    "@type": "LocalBusiness",
+    "@type": "Organization",
     name: "MOVE Colombia",
     url: siteUrl,
-    areaServed: ["Medellin", "Bogota", "Colombia"],
-    priceRange: "$$$",
+    areaServed: ["Medellín", "Bogotá", "Colombia"],
+    email: "contactateconseda@gmail.com",
+    telephone: "+57 314 727 8404",
     serviceType: [
       "Private transportation",
       "Airport transfers",

@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
 import { Footer } from "@/components/layout/footer";
-import { FloatingWhatsapp } from "@/components/layout/floating-whatsapp";
+import { FloatingHelpCenter } from "@/components/layout/floating-help-center";
 import { Navbar } from "@/components/layout/navbar";
-import { defaultSeo, organizationSchema } from "@/lib/seo";
+import { defaultSeo, jsonLd, organizationSchema } from "@/lib/seo";
 import "./globals.css";
 
 const inter = Inter({
@@ -25,12 +25,12 @@ export default function RootLayout({
       <body>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema()) }}
+          dangerouslySetInnerHTML={{ __html: jsonLd(organizationSchema()) }}
         />
         <Navbar />
         <main>{children}</main>
         <Footer />
-        <FloatingWhatsapp />
+        <FloatingHelpCenter />
         <Toaster richColors closeButton position="top-right" />
       </body>
     </html>

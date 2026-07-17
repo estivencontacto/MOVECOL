@@ -2,7 +2,7 @@ import { cities, services, tours } from "@/lib/data/catalog";
 import { sendPaymentConfirmedEmail } from "@/lib/services/email";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isMissingExpectedAmountColumnError } from "@/lib/supabase/schema-errors";
-import type { WompiTransaction } from "@/lib/wompi";
+import { getReservationIdFromWompiReference, type WompiTransaction } from "@/lib/wompi";
 
 type ReservationPaymentRecord = {
   id: string;
@@ -28,37 +28,54 @@ export async function syncWompiTransactionPayment(transaction: WompiTransaction)
     return { reservationId: null, paymentStatus: "ignored", reservationStatus: null };
   }
 
+  const reservationId = getReservationIdFromWompiReference(transaction.reference);
+  if (!reservationId) {
+    return { reservationId: null, paymentStatus: "ignored", reservationStatus: null };
+  }
+
   if (!transaction.id) {
     console.error("Wompi transaction ignored: missing transaction id", {
-      reservationId: transaction.reference
+      reservationId
     });
-    return { reservationId: transaction.reference, paymentStatus: "ignored", reservationStatus: null };
+    return { reservationId, paymentStatus: "ignored", reservationStatus: null };
+  }
+
+  if (
+    !Number.isSafeInteger(transaction.amount_in_cents) ||
+    (transaction.amount_in_cents ?? 0) <= 0 ||
+    transaction.currency !== "COP"
+  ) {
+    throw new Error("Wompi transaction has an invalid amount or currency.");
+  }
+
+  if (!["PENDING", "APPROVED", "DECLINED", "VOIDED", "ERROR"].includes(transaction.status ?? "")) {
+    throw new Error("Wompi transaction has an unsupported status.");
   }
 
   const paymentStatus = mapWompiStatus(transaction.status);
   const reservationStatus = mapReservationStatus(paymentStatus);
   const supabase = createAdminClient();
-  const normalizedReservation = await getPaymentReservation(transaction.reference);
-  const expectedAmountCents = normalizedReservation?.expected_amount_cents;
-  if (
-    typeof expectedAmountCents === "number" &&
-    typeof transaction.amount_in_cents === "number" &&
-    expectedAmountCents !== transaction.amount_in_cents
-  ) {
-    console.error("Wompi amount mismatch", {
-      reservationId: transaction.reference,
-      expectedAmountCents,
-      paidAmountCents: transaction.amount_in_cents,
-      transactionId: transaction.id
-    });
+  const normalizedReservation = await getPaymentReservation(reservationId);
+  if (!normalizedReservation) {
+    throw new Error("Wompi transaction references an unknown reservation.");
+  }
+
+  const expectedAmountCents = normalizedReservation.expected_amount_cents;
+  if (typeof expectedAmountCents !== "number") {
+    throw new Error("Wompi payment cannot be verified until expected_amount_cents is migrated.");
+  }
+
+  if (expectedAmountCents !== transaction.amount_in_cents) {
+    throw new Error("Wompi transaction amount does not match the reservation.");
   }
 
   const existingPayment = await getExistingPayment(transaction.id);
 
-  await supabase.from("payments").upsert(
+  const { error: paymentError } = await supabase.from("payments").upsert(
     {
-      reservation_id: transaction.reference,
+      reservation_id: reservationId,
       provider: "wompi",
+      provider_reference: transaction.reference,
       provider_transaction_id: transaction.id,
       amount_cents: transaction.amount_in_cents,
       currency: transaction.currency ?? "COP",
@@ -68,11 +85,19 @@ export async function syncWompiTransactionPayment(transaction: WompiTransaction)
     { onConflict: "provider_transaction_id" }
   );
 
+  if (paymentError) {
+    throw new Error(`Wompi payment persistence failed: ${paymentError.message}`);
+  }
+
   if (reservationStatus) {
-    await supabase
+    const { error: reservationError } = await supabase
       .from("reservations")
       .update({ status: reservationStatus })
-      .eq("id", transaction.reference);
+      .eq("id", reservationId);
+
+    if (reservationError) {
+      throw new Error(`Wompi reservation update failed: ${reservationError.message}`);
+    }
   }
 
   const shouldSendEmail =
@@ -90,7 +115,7 @@ export async function syncWompiTransactionPayment(transaction: WompiTransaction)
       : null;
 
     await sendPaymentConfirmedEmail({
-      reservationId: transaction.reference,
+      reservationId,
       to: customer?.email,
       fullName: customer?.full_name,
       city: city?.name ?? normalizedReservation.city_id,
@@ -106,7 +131,7 @@ export async function syncWompiTransactionPayment(transaction: WompiTransaction)
   }
 
   return {
-    reservationId: transaction.reference,
+    reservationId,
     paymentStatus,
     reservationStatus
   };

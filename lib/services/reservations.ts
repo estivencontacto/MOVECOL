@@ -2,8 +2,8 @@ import { randomUUID } from "crypto";
 import { cities, services, tours, vehicles } from "@/lib/data/catalog";
 import type { ReservationInput } from "@/lib/domain/schemas";
 import { estimateReservationPricing, toCents } from "@/lib/services/pricing";
+import { getVehicleCompatibility, isQuoteOnlyVehicle } from "@/lib/domain/vehicle-rules";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { isMissingExpectedAmountColumnError } from "@/lib/supabase/schema-errors";
 
 export async function createReservation(input: ReservationInput) {
   const supabase = createAdminClient();
@@ -12,12 +12,31 @@ export async function createReservation(input: ReservationInput) {
   const service = services.find((item) => item.id === input.serviceId);
   const tour = input.tourId ? tours.find((item) => item.id === input.tourId) : null;
   const vehicle = vehicles.find((item) => item.type === input.vehicleType);
-  const pricing = estimateReservationPricing(input);
-  const expectedAmountCents = toCents(pricing.amount);
+  const acceptedAt = new Date().toISOString();
 
   if (!city || !service || !vehicle) {
     throw new Error("La ciudad, servicio o vehiculo seleccionado no existe");
   }
+
+  if (input.tourId && (!tour || tour.citySlug !== city.slug)) {
+    throw new Error("El tour seleccionado no existe en la ciudad indicada");
+  }
+
+  const compatibility = getVehicleCompatibility({
+    vehicleType: input.vehicleType,
+    serviceId: input.serviceId,
+    passengers: input.passengers,
+    luggage: input.luggage
+  });
+  if (!compatibility.compatible) {
+    throw new Error("El vehiculo seleccionado no tiene capacidad suficiente");
+  }
+  if (isQuoteOnlyVehicle(input.vehicleType)) {
+    throw new Error("Van y bus deben procesarse como solicitudes especiales");
+  }
+
+  const pricing = estimateReservationPricing(input);
+  const expectedAmountCents = toCents(pricing.amount);
 
   const { data: customer, error: customerError } = await supabase
     .from("customers")
@@ -51,24 +70,16 @@ export async function createReservation(input: ReservationInput) {
     pickup_address: input.pickup,
     dropoff_address: input.dropoff,
     notes: input.notes ?? null,
-    expected_amount_cents: expectedAmountCents
+    expected_amount_cents: expectedAmountCents,
+    terms_version: input.termsVersion,
+    terms_accepted_at: acceptedAt,
+    privacy_accepted_at: acceptedAt
   };
 
   const { error: reservationError } = await supabase.from("reservations").insert(reservationPayload);
 
   if (reservationError) {
-    if (!isMissingExpectedAmountColumnError(reservationError)) {
-      throw reservationError;
-    }
-
-    console.error("Supabase migration missing: reservations.expected_amount_cents. Retrying reservation insert without the column.");
-
-    const { expected_amount_cents: _expectedAmountCents, ...legacyReservationPayload } = reservationPayload;
-    const { error: legacyReservationError } = await supabase.from("reservations").insert(legacyReservationPayload);
-
-    if (legacyReservationError) {
-      throw legacyReservationError;
-    }
+    throw reservationError;
   }
 
   return {

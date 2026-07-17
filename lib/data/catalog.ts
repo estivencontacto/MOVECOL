@@ -69,23 +69,26 @@ export const serviceAssetsByCity: Record<string, Record<string, { hero?: string;
 export const cities: City[] = [
   {
     id: "medellin",
-    name: "Medellin",
+    name: "Medellín",
     slug: "medellin",
     heroTitle: "Transporte privado en Medellin",
     heroSubtitle: "Viaja en confianza. Sin afanes. Servicio personalizado.",
     headline: "Movilidad privada y experiencias personalizadas en Colombia.",
     description:
       "Traslados, tours culturales, turismo medico y logistica especializada con vehiculos confortables y conductores profesionales.",
-    airport: "Aeropuerto Internacional Jose Maria Cordova",
+    airport: "Aeropuerto Internacional José María Córdova",
     image: localImage("/images/MEDELLIN/TOURS/CITY TOUR MEDELLIN/HERO/images (2).jpg"),
     heroImage: localImage("/images/MEDELLIN/TOURS/CITY TOUR MEDELLIN/HERO/images (2).jpg"),
     videoUrl: "https://www.youtube.com/watch?v=7589HBckaoo",
-    serviceIds: ["airport-transfer", "transfers", "hourly", "medical-tourism", "private-tours", "corporate"],
+    serviceIds: ["airport-transfer", "transfers", "hourly", "medical-tourism", "private-tours", "corporate", "events"],
+    mapCenter: { lat: 6.2442, lng: -75.5812 },
+    altitudeMeters: 1495,
+    timeZone: "America/Bogota",
     active: true
   },
   {
     id: "bogota",
-    name: "Bogota",
+    name: "Bogotá",
     slug: "bogota",
     heroTitle: "Descubre Bogotá",
     heroSubtitle: "Nosotros te llevamos con comodidad, seguridad y confianza.",
@@ -101,7 +104,10 @@ export const cities: City[] = [
       localImage("/images/BOGOTA/SERVICIOS/TRANSPORTE CORPORATIVO/HERO/17a262cc-796c-424a-87aa-c6dd1300ae66.png")
     ],
     videoUrl: "https://www.youtube.com/shorts/FaOBWw-TzMo",
-    serviceIds: ["airport-transfer", "transfers", "hourly", "medical-tourism", "private-tours", "corporate"],
+    serviceIds: ["airport-transfer", "transfers", "hourly", "medical-tourism", "private-tours", "corporate", "events"],
+    mapCenter: { lat: 4.711, lng: -74.0721 },
+    altitudeMeters: 2640,
+    timeZone: "America/Bogota",
     active: true
   }
 ];
@@ -897,12 +903,45 @@ export const tours: Tour[] = [
   }
 ];
 
+export type TourRouteDestination = {
+  label: string;
+  placeId?: string;
+};
+
+export const tourRouteDestinations: Record<string, TourRouteDestination> = {
+  "med-city-tour": { label: "Plaza Botero, Medellín, Colombia" },
+  "med-comuna-13": { label: "Graffitour Comuna 13, Medellín, Colombia" },
+  "med-guatape": { label: "Piedra del Peñol, Guatapé, Antioquia, Colombia" },
+  "med-vuelta-oriente": { label: "El Retiro, Antioquia, Colombia" },
+  "med-coffee-tour": { label: "Jardín, Antioquia, Colombia" },
+  "med-hacienda-napoles": { label: "Hacienda Nápoles, Puerto Triunfo, Antioquia, Colombia" },
+  "med-parapente": { label: "San Félix, Bello, Antioquia, Colombia" },
+  "med-compras": { label: "El Tesoro Parque Comercial, Medellín, Colombia" },
+  "med-pablo-escobar": { label: "Cementerio Jardines Montesacro, Itagüí, Colombia" },
+  "med-miradores": { label: "Mirador Las Palmas, Medellín, Colombia" },
+  "med-santa-fe": { label: "Santa Fe de Antioquia, Antioquia, Colombia" },
+  "bog-city-tour": { label: "Plaza de Bolívar, Bogotá, Colombia" },
+  "bog-hacienda-napoles": { label: "Hacienda Nápoles, Puerto Triunfo, Antioquia, Colombia" },
+  "bog-miradores": { label: "Mirador La Calera, Bogotá, Colombia" },
+  "bog-monserrate": { label: "Cerro de Monserrate, Bogotá, Colombia" },
+  "bog-centro-historico-candelaria": { label: "La Candelaria, Bogotá, Colombia" },
+  "bog-gran-san-victorino": { label: "Gran San Victorino, Bogotá, Colombia" },
+  "bog-zona-t": { label: "Zona T, Bogotá, Colombia" },
+  "bog-guatavita": { label: "Laguna de Guatavita, Sesquilé, Cundinamarca, Colombia" },
+  "bog-catedral-sal": { label: "Catedral de Sal de Zipaquirá, Colombia" },
+  "bog-jaime-duque": { label: "Parque Jaime Duque, Tocancipá, Cundinamarca, Colombia" }
+};
+
+export function getTourRouteDestination(tourId: string) {
+  return tourRouteDestinations[tourId];
+}
+
 export const vehicles: Vehicle[] = [
   {
     id: "sedan-premium",
     type: "sedan",
     name: "Sedan Premium",
-    capacity: 3,
+    capacity: 4,
     luggage: 2,
     image: localImage("/images/GLOBAL/VEHICULOS/SEDAN EJECUTIVO/87-sam-2546-still-virtus-23-cl-tsi-basico-5-8-frente-b4b4-cristal-estu-adv-sam.png"),
     description: "Ideal para aeropuerto, viajeros de negocio y parejas.",
@@ -912,10 +951,20 @@ export const vehicles: Vehicle[] = [
     id: "suv-premium",
     type: "suv",
     name: "SUV Premium",
-    capacity: 5,
+    capacity: 4,
     luggage: 4,
     image: localImage("/images/GLOBAL/VEHICULOS/SUV PREMIUM/images (2).jpg"),
     description: "Mayor confort para familias, clientes VIP y equipaje.",
+    available: true
+  },
+  {
+    id: "six-passenger",
+    type: "six-passenger",
+    name: "Vehículo de 6 pasajeros",
+    capacity: 6,
+    luggage: null,
+    image: localImage("/images/GLOBAL/VEHICULOS/SUV PREMIUM/images (3).jpg"),
+    description: "Alternativa privada para grupos de hasta seis pasajeros.",
     available: true
   },
   {

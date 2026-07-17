@@ -11,6 +11,7 @@ import type { City, Tour } from "@/lib/domain/types";
 export function TourGrid({
   city,
   tours,
+  id = "tours",
   eyebrow = "Tours privados",
   title = `Experiencias privadas en ${city.name}`,
   description = city.description,
@@ -18,14 +19,34 @@ export function TourGrid({
 }: {
   city: City;
   tours: Tour[];
+  id?: string;
   eyebrow?: string;
   title?: string;
   description?: string;
   muted?: boolean;
 }) {
   return (
-    <section className={muted ? "section bg-muted/55" : "section"}>
+    <section id={id} className={muted ? "section scroll-mt-24 bg-muted/55" : "section scroll-mt-24"}>
       <div className="container">
+        <nav aria-label="Cambiar ciudad" className="mb-8 flex w-fit items-center gap-1 rounded-md border bg-card p-1">
+          {[
+            { slug: "bogota", label: "Bogotá" },
+            { slug: "medellin", label: "Medellín" }
+          ].map((item) => (
+            <Link
+              key={item.slug}
+              href={`/destinos/${item.slug}#tours`}
+              aria-current={city.slug === item.slug ? "page" : undefined}
+              className={
+                city.slug === item.slug
+                  ? "rounded-sm bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+                  : "rounded-sm px-4 py-2 text-sm font-semibold text-muted-foreground hover:bg-muted hover:text-foreground"
+              }
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
         <SectionReveal>
           <div className="mb-10 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div className="max-w-3xl">
@@ -35,7 +56,7 @@ export function TourGrid({
             </div>
             <Badge className="w-fit bg-secondary text-secondary-foreground">
               <ShieldCheck className="mr-2 size-3" aria-hidden />
-              Operacion privada
+              Operación privada
             </Badge>
           </div>
         </SectionReveal>
@@ -80,7 +101,7 @@ export function TourGrid({
                   <span className="text-sm font-semibold">
                     Desde <Price value={tour.basePrice} />
                     <span className="block text-[0.68rem] font-medium text-muted-foreground">
-                      {tour.pricingMode === "global" ? "precio global" : "por persona, minimo 2"}
+                      {tour.pricingMode === "global" ? "precio global" : "por persona, mínimo 2"}
                     </span>
                   </span>
                   <Button asChild variant="ghost" className="px-0">

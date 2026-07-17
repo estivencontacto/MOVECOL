@@ -7,7 +7,7 @@ import { isSupabaseAdminConfigured } from "@/lib/env";
 import { syncWompiTransactionPayment } from "@/lib/services/payments";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isMissingExpectedAmountColumnError } from "@/lib/supabase/schema-errors";
-import { getWompiTransaction } from "@/lib/wompi";
+import { getReservationIdFromWompiReference, getWompiTransaction } from "@/lib/wompi";
 import type { WompiTransaction } from "@/lib/wompi";
 
 export const dynamic = "force-dynamic";
@@ -33,8 +33,10 @@ type ReservationSuccess = {
 export default async function PaymentSuccessPage({ searchParams }: Props) {
   const { id: transactionId, reservation: reservationParam } = await searchParams;
   const transaction = transactionId ? await resolveWompiTransaction(transactionId) : null;
-  const reservationId = transaction?.reference ?? reservationParam;
-  const reservation = reservationId ? await getReservation(reservationId) : null;
+  const reservationId = transaction?.reference
+    ? getReservationIdFromWompiReference(transaction.reference)
+    : reservationParam;
+  const reservation = reservationId && isUuid(reservationId) ? await getReservation(reservationId) : null;
   const city = reservation ? cities.find((item) => item.id === reservation.city_id) : null;
   const service = reservation ? services.find((item) => item.id === reservation.service_id) : null;
   const tour = reservation?.tour_id ? tours.find((item) => item.id === reservation.tour_id) : null;
@@ -133,7 +135,13 @@ async function resolveWompiTransaction(transactionId: string) {
   if (!transaction) return null;
 
   if (isSupabaseAdminConfigured() && transaction.reference) {
-    await syncWompiTransactionPayment(transaction);
+    try {
+      await syncWompiTransactionPayment(transaction);
+    } catch (error) {
+      console.error("Wompi redirect synchronization failed", {
+        message: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
   }
 
   return transaction;
@@ -237,4 +245,10 @@ function formatCop(value: number) {
     currency: "COP",
     maximumFractionDigits: 0
   }).format(value);
+}
+
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value
+  );
 }

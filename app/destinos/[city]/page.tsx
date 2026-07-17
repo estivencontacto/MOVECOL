@@ -50,7 +50,7 @@ export default async function CityPage({ params }: Props) {
       />
       <CityHero city={city} />
       <CityServices citySlug={city.slug} services={cityServices} />
-      <TourGrid city={city} tours={cityTours} />
+      <TourGrid city={city} tours={cityTours} id="tours" />
     </>
   );
 }

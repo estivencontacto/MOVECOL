@@ -45,7 +45,7 @@ export function CityHero({ city }: { city: City }) {
 
           <div className="mt-8 grid max-w-3xl gap-3 sm:grid-cols-3">
             <HeroSignal icon={ShieldCheck} title="Conductores" text="Profesionales verificados" />
-            <HeroSignal icon={Clock} title="Operacion" text="Puntual y coordinada" />
+            <HeroSignal icon={Clock} title="Operación" text="Puntual y coordinada" />
             <HeroSignal icon={Sparkles} title="Experiencias" text="Privadas y flexibles" />
           </div>
 

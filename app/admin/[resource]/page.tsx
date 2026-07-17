@@ -30,7 +30,7 @@ const resources = {
     title: "Vehiculos",
     description: "Gestiona capacidad, equipaje, fotografias y disponibilidad.",
     columns: ["Nombre", "Tipo", "Capacidad"],
-    sample: [["SUV Executive", "SUV", "5"], ["Van Privada", "Van", "10"]]
+    sample: [["SUV Executive", "SUV", "4"], ["Van Privada", "Van", "10"]]
   },
   conductores: {
     title: "Conductores",

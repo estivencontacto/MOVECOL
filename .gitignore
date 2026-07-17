@@ -5,10 +5,15 @@ dist/
 coverage/
 *.tsbuildinfo
 .vercel/
+.agents/
+.claude/
 .DS_Store
 *.log
 
-.env
-.env.local
-.env.*.local
+.env*
 !.env.example
+*.key
+*.p12
+*.pfx
+*.pem
+supabase/.temp/
