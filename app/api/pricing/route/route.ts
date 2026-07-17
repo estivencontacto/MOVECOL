@@ -80,6 +80,7 @@ export async function POST(request: Request) {
       );
     }
 
+    const distanceKm = Number(result.route.distanceKm.toFixed(1));
     const pricing = estimateReservationPricing({
       cityId: parsed.data.cityId,
       serviceId: parsed.data.serviceId,
@@ -87,12 +88,12 @@ export async function POST(request: Request) {
       vehicleType: parsed.data.vehicleType,
       passengers: parsed.data.passengers ?? 2,
       hours: parsed.data.hours,
-      distanceKm: result.route.distanceKm,
+      distanceKm,
       promoCode: parsed.data.promoCode
     });
 
     return NextResponse.json({
-      distanceKm: result.route.distanceKm,
+      distanceKm,
       durationText: result.route.durationText,
       originAddress: result.route.originAddress,
       destinationAddress: result.route.destinationAddress,

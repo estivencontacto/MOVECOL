@@ -104,10 +104,28 @@ export function estimateDistancePricing({
     return quoteOnlyEstimate();
   }
 
-  const distanceAmount = Math.ceil(distanceKm) * COP_PER_KM;
+  const surcharge = getVehicleSurcharge(vehicleType);
+
+  if (serviceId === "transfers") {
+    const distanceAmount = Math.round(Math.max(0, distanceKm) * COP_PER_KM);
+
+    return withGatewayFee({
+      subtotal: distanceAmount + surcharge,
+      requiresAvailabilityCheck: false,
+      promoCode,
+      serviceBreakdown: [
+        {
+          label: `Distancia ${distanceKm.toFixed(1)} km × COP $4.500`,
+          amount: distanceAmount
+        },
+        ...(surcharge > 0 ? [{ label: "Recargo por tipo de vehículo", amount: surcharge }] : [])
+      ]
+    });
+  }
+
+  const distanceAmount = Math.ceil(Math.max(0, distanceKm)) * COP_PER_KM;
   const airportBase = serviceId === "airport-transfer" && cityId === "bogota" ? AIRPORT_BASE_COP : 0;
   const minimum = MINIMUM_BY_CITY[cityId] ?? 40000;
-  const surcharge = getVehicleSurcharge(vehicleType);
   const routeSubtotal = distanceAmount + airportBase;
   const minimumAdjustment = Math.max(0, minimum - routeSubtotal);
   const subtotal = routeSubtotal + minimumAdjustment + surcharge;
@@ -132,17 +150,19 @@ export function getVehicleSurcharge(vehicleType: VehicleType) {
 function withGatewayFee({
   subtotal,
   requiresAvailabilityCheck,
-  promoCode
+  promoCode,
+  serviceBreakdown
 }: {
   subtotal: number;
   requiresAvailabilityCheck: boolean;
   promoCode?: string;
+  serviceBreakdown?: Array<{ label: string; amount: number }>;
 }): PriceEstimate {
   const discount = getPromoDiscount(subtotal, promoCode);
   const discountedSubtotal = subtotal - discount;
   const gatewayFee = Math.ceil(discountedSubtotal * PAYMENT_GATEWAY_RATE);
   const breakdown = [
-    { label: "Precio del servicio", amount: subtotal },
+    ...(serviceBreakdown ?? [{ label: "Precio del servicio", amount: subtotal }]),
     ...(discount > 0 ? [{ label: "Descuento upsell (5%)", amount: -discount }] : []),
     { label: "Uso pasarela de pago (5%)", amount: gatewayFee }
   ];

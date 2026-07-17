@@ -135,13 +135,13 @@ export const services: Service[] = [
     slug: "traslados",
     category: "transfers",
     description:
-      "Traslados privados punto a punto dentro de la ciudad o hacia destinos cercanos, liquidados por distancia, ciudad, horario y tipo de vehiculo.",
-    benefits: ["Precio por kilometro", "Origen y destino personalizados", "Ideal para hoteles, clinicas, reuniones y viajes intermunicipales"],
+      "Traslados privados punto a punto dentro de la ciudad o hacia destinos cercanos, con una tarifa base de COP 4.500 por kilometro de ruta.",
+    benefits: ["Tarifa base de COP 4.500 por kilometro", "Origen y destino personalizados", "Ideal para hoteles, clinicas, reuniones y viajes intermunicipales"],
     process: ["Indica origen y destino", "Calculamos kilometros de ruta", "Confirmamos tarifa y disponibilidad"],
     faqs: [
       {
         question: "Como se calcula el precio?",
-        answer: "La tarifa base se calcula por distancia de ruta, minimo por ciudad y tipo de vehiculo."
+        answer: "La tarifa base corresponde a la distancia real de la ruta multiplicada por COP 4.500. Los recargos por tipo de vehiculo y pasarela de pago se muestran por separado antes de reservar."
       }
     ]
   },

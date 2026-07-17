@@ -42,17 +42,16 @@ export function ContactStep({
 }) {
   return (
     <section aria-labelledby="contact-title">
-      <p className="eyebrow">{language === "EN" ? "Step 3" : "Paso 3"}</p>
-      <h2 id="contact-title" className="mt-3 text-3xl font-bold">
-        {language === "EN" ? "Confirm your booking" : "Confirma tu reserva"}
+      <h2 id="contact-title" className="text-2xl font-bold sm:text-3xl">
+        {language === "EN" ? "Your details and payment" : "Tus datos y pago"}
       </h2>
 
       <div className="mt-8 grid gap-5 md:grid-cols-2">
         <ContactField id="full-name" label={language === "EN" ? "Full name" : "Nombre completo"} icon={UserRound} error={errors.customer?.fullName?.message}>
-          <Input id="full-name" value={customer.fullName} onChange={(event) => onCustomerChange("fullName", event.target.value)} aria-invalid={Boolean(errors.customer?.fullName)} />
+          <Input id="full-name" value={customer.fullName} onChange={(event) => onCustomerChange("fullName", event.target.value)} placeholder={language === "EN" ? "First and last name" : "Nombre y apellido"} aria-invalid={Boolean(errors.customer?.fullName)} />
         </ContactField>
         <ContactField id="email" label={language === "EN" ? "Email" : "Correo"} icon={Mail} error={errors.customer?.email?.message}>
-          <Input id="email" type="email" value={customer.email} onChange={(event) => onCustomerChange("email", event.target.value)} aria-invalid={Boolean(errors.customer?.email)} />
+          <Input id="email" type="email" value={customer.email} onChange={(event) => onCustomerChange("email", event.target.value)} placeholder="tu@correo.com" aria-invalid={Boolean(errors.customer?.email)} />
         </ContactField>
         <ContactField id="country-code" label={language === "EN" ? "Country code" : "Código de país"} icon={Phone}>
           <Select id="country-code" value={countryCode} onChange={(event) => onCountryCodeChange(event.target.value)}>
@@ -65,11 +64,11 @@ export function ContactStep({
           </Select>
         </ContactField>
         <ContactField id="phone" label={language === "EN" ? "Phone" : "Teléfono"} icon={Phone} error={errors.customer?.phone?.message}>
-          <Input id="phone" type="tel" value={customer.phone} onChange={(event) => onCustomerChange("phone", event.target.value)} placeholder="314 727 8404" aria-invalid={Boolean(errors.customer?.phone)} />
+          <Input id="phone" type="tel" value={customer.phone} onChange={(event) => onCustomerChange("phone", event.target.value)} placeholder={language === "EN" ? "e.g. 300 123 4567" : "Ej. 300 123 4567"} aria-invalid={Boolean(errors.customer?.phone)} />
         </ContactField>
         <div className="md:col-span-2">
           <ContactField id="notes" label={language === "EN" ? "Final notes" : "Observaciones finales"} icon={MessageSquare}>
-            <Textarea id="notes" value={notes} onChange={(event) => onNotesChange(event.target.value)} maxLength={800} />
+            <Textarea id="notes" value={notes} onChange={(event) => onNotesChange(event.target.value)} placeholder={language === "EN" ? "Optional instructions for your trip" : "Indicaciones opcionales para tu recorrido"} maxLength={800} />
           </ContactField>
         </div>
       </div>

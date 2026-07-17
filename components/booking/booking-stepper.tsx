@@ -5,8 +5,8 @@ import type { BookingLanguage, BookingStep } from "@/components/booking/booking-
 import { cn } from "@/lib/utils";
 
 const labels = {
-  ES: ["Experiencia", "Recorrido", "Confirmación"],
-  EN: ["Experience", "Trip", "Confirmation"]
+  ES: ["Seleccionar", "Completar", "Revisar y pagar"],
+  EN: ["Choose", "Complete", "Review and pay"]
 } as const;
 
 export function BookingStepper({

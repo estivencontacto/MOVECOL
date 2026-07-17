@@ -7,7 +7,6 @@ import {
   Luggage,
   MapPinned,
   Plane,
-  Route,
   Users
 } from "lucide-react";
 import type { FieldErrors } from "react-hook-form";
@@ -20,11 +19,13 @@ import { PlaceAutocompleteInput } from "@/components/booking/place-autocomplete-
 import { QuantitySelector } from "@/components/booking/quantity-selector";
 import { RouteMiniMap } from "@/components/booking/route-mini-map";
 import { VehicleSelector } from "@/components/booking/vehicle-selector";
+import { Price } from "@/components/preferences/site-preferences";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { ReservationInput } from "@/lib/domain/schemas";
+import { COP_PER_KM } from "@/lib/services/pricing";
 import { cn } from "@/lib/utils";
 
 export type TripStepValues = Pick<
@@ -53,17 +54,14 @@ export function TripStep({
   airportDirection,
   flightNumber,
   mobilityNeeds,
-  tourDestination,
   minimumPassengers,
   routeData,
-  routePending,
   routeCalculating,
   departureAt,
   onValueChange,
   onAirportDirectionChange,
   onFlightNumberChange,
   onMobilityNeedsChange,
-  onCalculateRoute,
   onBack,
   onContinue
 }: {
@@ -75,17 +73,14 @@ export function TripStep({
   airportDirection: AirportDirection;
   flightNumber: string;
   mobilityNeeds: string;
-  tourDestination?: string;
   minimumPassengers: number;
   routeData?: RoutePricingResponse;
-  routePending: boolean;
   routeCalculating: boolean;
   departureAt?: string;
   onValueChange: <K extends keyof TripStepValues>(key: K, value: TripStepValues[K]) => void;
   onAirportDirectionChange: (value: AirportDirection) => void;
   onFlightNumberChange: (value: string) => void;
   onMobilityNeedsChange: (value: string) => void;
-  onCalculateRoute: () => void;
   onBack: () => void;
   onContinue: () => void;
 }) {
@@ -93,13 +88,17 @@ export function TripStep({
   const isTour = values.serviceId === "private-tours";
   const isHourly = values.serviceId === "hourly";
   const isMedical = values.serviceId === "medical-tourism";
+  const isTransfer = values.serviceId === "transfers";
+  const showsLuggage = isAirport || isTransfer || isMedical;
   const hasMapRoute = values.pickup.trim().length >= 4 && values.dropoff.trim().length >= 4;
+  const transferBaseAmount = routeData && isTransfer
+    ? Math.round(routeData.distanceKm * COP_PER_KM)
+    : 0;
 
   return (
     <section aria-labelledby="trip-title">
-      <p className="eyebrow">{language === "EN" ? "Step 2" : "Paso 2"}</p>
-      <h2 id="trip-title" className="mt-3 text-3xl font-bold">
-        {language === "EN" ? "Organize your trip details" : "Organiza los detalles de tu recorrido"}
+      <h2 id="trip-title" className="text-2xl font-bold sm:text-3xl">
+        {language === "EN" ? "Complete your trip" : "Completa tu recorrido"}
       </h2>
 
       {isAirport ? (
@@ -157,10 +156,8 @@ export function TripStep({
           )}
         </Field>
 
-        <Field label={getDropoffLabel(values.serviceId, language)} id="dropoff" error={errors.dropoff?.message}>
-          {isTour ? (
-            <Input id="dropoff" value={tourDestination ?? values.dropoff} readOnly />
-          ) : isAirport && airportDirection === "to-airport" ? (
+        {!isTour ? <Field label={getDropoffLabel(values.serviceId, language)} id="dropoff" error={errors.dropoff?.message}>
+          {isAirport && airportDirection === "to-airport" ? (
             <Input id="dropoff" value={airport} readOnly />
           ) : (
             <PlaceAutocompleteInput
@@ -179,7 +176,7 @@ export function TripStep({
               }}
             />
           )}
-        </Field>
+        </Field> : null}
 
         {isAirport ? (
           <Field label={language === "EN" ? "Flight number (optional)" : "Número de vuelo (opcional)"} id="flight-number">
@@ -206,9 +203,9 @@ export function TripStep({
         </div>
       ) : null}
 
-      <div className="mt-8 grid gap-5 sm:grid-cols-2">
+      <div className={cn("mt-8 grid gap-5", showsLuggage && "sm:grid-cols-2")}>
         <QuantitySelector id="passengers" label={language === "EN" ? "Passengers" : "Pasajeros"} value={values.passengers} min={minimumPassengers} max={50} icon={Users} onChange={(value) => onValueChange("passengers", value)} />
-        <QuantitySelector id="luggage" label={language === "EN" ? "Luggage" : "Equipaje"} value={values.luggage} min={0} max={80} icon={Luggage} onChange={(value) => onValueChange("luggage", value)} />
+        {showsLuggage ? <QuantitySelector id="luggage" label={language === "EN" ? "Luggage" : "Equipaje"} value={values.luggage} min={0} max={80} icon={Luggage} onChange={(value) => onValueChange("luggage", value)} /> : null}
       </div>
 
       <fieldset className="mt-8">
@@ -227,20 +224,17 @@ export function TripStep({
       </fieldset>
 
       <div className="mt-8">
-          <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="flex items-center gap-2 font-bold"><MapPinned className="size-4 text-primary" aria-hidden /> {language === "EN" ? "Interactive route" : "Recorrido interactivo"}</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {routeData?.durationText
-                  ? `${routeData.distanceKm.toFixed(1)} km · ${routeData.durationText}`
-                  : language === "EN" ? "Google Maps will show the locations and estimated route." : "Google Maps mostrará las ubicaciones y el recorrido estimado."}
-              </p>
-            </div>
-            <Button type="button" variant="outline" onClick={onCalculateRoute} disabled={routeCalculating || !hasMapRoute}>
-              <Route className="size-4" aria-hidden />
-              {routeCalculating ? (language === "EN" ? "Calculating route" : "Calculando ruta") : (language === "EN" ? "Recalculate" : "Recalcular")}
-            </Button>
+          <div className="mb-3">
+            <p className="flex items-center gap-2 font-bold"><MapPinned className="size-4 text-primary" aria-hidden /> {language === "EN" ? "Route and price" : "Recorrido y precio"}</p>
+            <p className="mt-1 text-sm text-muted-foreground" role="status">
+              {routeCalculating
+                ? (language === "EN" ? "Calculating with Google Maps..." : "Calculando con Google Maps...")
+                : hasMapRoute
+                  ? (language === "EN" ? "The route updates automatically." : "La ruta se actualiza automáticamente.")
+                  : (language === "EN" ? "Enter origin and destination to see the route." : "Completa origen y destino para ver la ruta.")}
+            </p>
           </div>
+          {hasMapRoute ? (
           <RouteMiniMap
             apiKey={apiKey}
             cityId={values.cityId}
@@ -252,15 +246,25 @@ export function TripStep({
             origin={values.pickup}
             originPlaceId={values.originPlaceId}
           />
+          ) : null}
           {routeData ? (
-            <div className="mt-3 grid gap-3 border bg-muted/45 p-4 text-sm sm:grid-cols-3" aria-live="polite">
-              <span><strong>{routeData.distanceKm.toFixed(1)} km</strong><span className="block text-xs text-muted-foreground">{language === "EN" ? "Distance" : "Distancia"}</span></span>
-              <span><strong>{routeData.durationText ?? "-"}</strong><span className="block text-xs text-muted-foreground">{language === "EN" ? "Estimated duration" : "Duración estimada"}</span></span>
-              {!routeData.quoteOnly ? (
-                <span><strong>{language === "EN" ? "Updated" : "Actualizado"}</strong><span className="block text-xs text-muted-foreground">{language === "EN" ? "Service estimate" : "Estimado del servicio"}</span></span>
-              ) : (
-                <span><strong>{language === "EN" ? "To confirm" : "Por confirmar"}</strong><span className="block text-xs text-muted-foreground">{language === "EN" ? "Price" : "Precio"}</span></span>
-              )}
+            <div className={cn("mt-3 grid gap-3 border bg-muted/45 p-4 text-sm", isTransfer ? "sm:grid-cols-3" : "sm:grid-cols-2")} aria-live="polite">
+              <span>
+                <strong>{routeData.distanceKm.toFixed(1)} km</strong>
+                <span className="block text-xs text-muted-foreground">{language === "EN" ? "Distance" : "Distancia"}</span>
+              </span>
+              {isTransfer ? (
+                <span>
+                  <strong>{routeData.distanceKm.toFixed(1)} km × COP $4.500</strong>
+                  <span className="block text-xs text-muted-foreground">
+                    {language === "EN" ? "Base price: " : "Precio base: "}<Price value={transferBaseAmount} />
+                  </span>
+                </span>
+              ) : null}
+              <span>
+                <strong>{routeData.durationText ?? "-"}</strong>
+                <span className="block text-xs text-muted-foreground">{language === "EN" ? "Estimated duration" : "Duración estimada"}</span>
+              </span>
             </div>
           ) : null}
           {isTour ? (
@@ -272,15 +276,9 @@ export function TripStep({
           ) : null}
         </div>
 
-      {routePending ? (
-        <p className="mt-5 rounded-md bg-secondary/15 p-4 text-sm font-semibold" role="status">
-          {language === "EN" ? "Route information pending; you can continue and recalculate later." : "Información de ruta pendiente; puedes continuar y recalcular después."}
-        </p>
-      ) : null}
-
       <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:justify-between">
         <Button type="button" size="lg" variant="outline" onClick={onBack}><ArrowLeft className="size-4" aria-hidden /> {language === "EN" ? "Back" : "Volver"}</Button>
-        <Button type="button" size="lg" onClick={onContinue}><CalendarDays className="size-4" aria-hidden /> {language === "EN" ? "Continue with my details" : "Continuar con mis datos"} <ArrowRight className="size-4" aria-hidden /></Button>
+        <Button type="button" size="lg" onClick={onContinue} disabled={routeCalculating}><CalendarDays className="size-4" aria-hidden /> {language === "EN" ? "Review and continue" : "Revisar y continuar"} <ArrowRight className="size-4" aria-hidden /></Button>
       </div>
     </section>
   );

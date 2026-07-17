@@ -31,6 +31,8 @@ export function MobileBookingSummary({
 }) {
   const name = tours.find((item) => item.id === values.tourId)?.name ?? services.find((item) => item.id === values.serviceId)?.title ?? "-";
 
+  if (!values.serviceId) return null;
+
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t bg-background px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 shadow-[0_-16px_35px_-28px_rgba(0,0,0,0.45)] lg:hidden">
       <div className="mx-auto flex max-w-3xl items-center gap-3">
@@ -70,8 +72,8 @@ export function MobileBookingSummary({
           {currentStep === 3
             ? estimate.quoteOnly
               ? "WhatsApp"
-              : (language === "EN" ? "Confirm" : "Confirmar")
-            : (language === "EN" ? "Continue" : "Continuar")}
+              : (language === "EN" ? "Pay" : "Pagar")
+            : (language === "EN" ? "Next" : "Siguiente")}
         </Button>
       </div>
     </div>

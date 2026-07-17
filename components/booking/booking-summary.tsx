@@ -59,6 +59,10 @@ export function BookingSummaryDetails({
   const service = services.find((item) => item.id === values.serviceId);
   const tour = tours.find((item) => item.id === values.tourId);
   const vehicle = vehicles.find((item) => item.type === values.vehicleType);
+  const showsLuggage = ["airport-transfer", "transfers", "medical-tourism"].includes(values.serviceId);
+  const needsRoutePrice = ["airport-transfer", "transfers"].includes(values.serviceId);
+  const gatewayLine = estimate.breakdown.find((item) => item.label === "Uso pasarela de pago (5%)");
+  const serviceLines = estimate.breakdown.filter((item) => item.label !== "Uso pasarela de pago (5%)");
 
   return (
     <div className="space-y-5 text-sm">
@@ -66,16 +70,12 @@ export function BookingSummaryDetails({
         <SummaryRow label={language === "EN" ? "City" : "Ciudad"} value={city?.id === "bogota" ? "Bogotá" : "Medellín"} />
         <SummaryRow label={language === "EN" ? "Service" : "Servicio"} value={formatService(service?.id, service?.title, language)} />
         {tour ? <SummaryRow label="Tour" value={tour.name} /> : null}
-        <SummaryRow label={language === "EN" ? "Date and time" : "Fecha y hora"} value={values.date ? `${values.date} · ${values.time}` : "-"} />
-        <SummaryRow label={language === "EN" ? "Pickup" : "Recogida"} value={values.pickup || "-"} />
-        <SummaryRow label={language === "EN" ? "Destination" : "Destino"} value={values.dropoff || "-"} />
+        {values.date ? <SummaryRow label={language === "EN" ? "Date and time" : "Fecha y hora"} value={`${values.date} · ${values.time}`} /> : null}
+        {values.pickup ? <SummaryRow label={language === "EN" ? "Pickup" : "Recogida"} value={values.pickup} /> : null}
+        {!tour && values.dropoff ? <SummaryRow label={language === "EN" ? "Destination" : "Destino"} value={values.dropoff} /> : null}
         <SummaryRow label={language === "EN" ? "Passengers" : "Pasajeros"} value={String(values.passengers)} />
-        <SummaryRow label={language === "EN" ? "Luggage" : "Equipaje"} value={String(values.luggage)} />
+        {showsLuggage ? <SummaryRow label={language === "EN" ? "Luggage" : "Equipaje"} value={String(values.luggage)} /> : null}
         <SummaryRow label={language === "EN" ? "Vehicle" : "Vehículo"} value={vehicle?.name ?? "-"} />
-        <SummaryRow
-          label={language === "EN" ? "Price mode" : "Modalidad"}
-          value={tour ? (tour.pricingMode === "global" ? (language === "EN" ? "Global price" : "Precio global") : (language === "EN" ? "Per person" : "Por persona")) : (language === "EN" ? "Service estimate" : "Estimado del servicio")}
-        />
       </div>
 
       {routeData ? (
@@ -99,7 +99,7 @@ export function BookingSummaryDetails({
         </p>
       ) : null}
 
-      {!estimate.quoteOnly ? <div className="border-t pt-4">
+      {!estimate.quoteOnly && (!needsRoutePrice || routeData) ? <div className="border-t pt-4">
         <AnimatePresence mode="wait">
           <motion.div
             key={estimate.amount}
@@ -110,10 +110,11 @@ export function BookingSummaryDetails({
             aria-live="polite"
           >
             <div className="space-y-2">
-              {estimate.breakdown.map((item) => (
+              {serviceLines.map((item) => (
                 <SummaryRow key={item.label} label={translateBreakdown(item.label, language)} valueNode={<Price value={item.amount} />} />
               ))}
-              <SummaryRow label={language === "EN" ? "Subtotal" : "Subtotal"} valueNode={<Price value={estimate.subtotal} />} strong />
+              {serviceLines.length > 1 ? <SummaryRow label={language === "EN" ? "Service subtotal" : "Subtotal del servicio"} valueNode={<Price value={estimate.subtotal} />} strong /> : null}
+              {gatewayLine ? <SummaryRow label={translateBreakdown(gatewayLine.label, language)} valueNode={<Price value={gatewayLine.amount} />} /> : null}
             </div>
             <div className="mt-4 flex items-end justify-between gap-4 border-t pt-4">
               <span className="font-bold">{language === "EN" ? "Total" : "Total"}</span>
@@ -149,8 +150,12 @@ function SummaryRow({
 
 function translateBreakdown(label: string, language: BookingLanguage) {
   if (language === "ES") return label;
+  if (label.startsWith("Distancia ")) {
+    return label.replace("Distancia", "Distance").replace("COP $4.500", "COP $4,500");
+  }
   const labels: Record<string, string> = {
     "Precio del servicio": "Service price",
+    "Recargo por tipo de vehículo": "Vehicle type surcharge",
     "Descuento upsell (5%)": "Upsell discount (5%)",
     "Uso pasarela de pago (5%)": "Payment gateway fee (5%)"
   };

@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { BookingStepper } from "@/components/booking/booking-stepper";
@@ -18,13 +18,22 @@ import { ContactStep } from "@/components/booking/steps/contact-step";
 import { ExperienceStep } from "@/components/booking/steps/experience-step";
 import { TripStep, type TripStepValues } from "@/components/booking/steps/trip-step";
 import { useLanguage } from "@/components/preferences/site-preferences";
-import { cities, getTourRouteDestination, services, tours } from "@/lib/data/catalog";
+import { cities, getTourRouteDestination, services, tours, vehicles } from "@/lib/data/catalog";
 import { reservationSchema, type ReservationInput } from "@/lib/domain/schemas";
 import { getVehicleCompatibility } from "@/lib/domain/vehicle-rules";
 import { company } from "@/lib/legal/company";
-import { estimateReservationPricing } from "@/lib/services/pricing";
+import { estimateReservationPricing, type PriceEstimate } from "@/lib/services/pricing";
 
 const googleMapsBrowserKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY;
+const BOOKING_SELECTIONS_KEY = "move:booking-selections:v1";
+const EMPTY_ESTIMATE: PriceEstimate = {
+  amount: 0,
+  subtotal: 0,
+  gatewayFee: 0,
+  requiresAvailabilityCheck: false,
+  quoteOnly: false,
+  breakdown: []
+};
 const routeKeys: Array<keyof TripStepValues> = [
   "cityId",
   "serviceId",
@@ -39,6 +48,8 @@ const routeKeys: Array<keyof TripStepValues> = [
 
 export function BookingForm() {
   const [language] = useLanguage();
+  const formRef = useRef<HTMLFormElement>(null);
+  const [initialized, setInitialized] = useState(false);
   const [currentStep, setCurrentStep] = useState<BookingStep>(1);
   const [completedSteps, setCompletedSteps] = useState<BookingStep[]>([]);
   const [errorStep, setErrorStep] = useState<BookingStep>();
@@ -53,7 +64,7 @@ export function BookingForm() {
     resolver: zodResolver(reservationSchema),
     defaultValues: {
       cityId: defaultCity.id,
-      serviceId: "airport-transfer",
+      serviceId: "",
       tourId: "",
       date: "",
       time: "09:00",
@@ -61,13 +72,13 @@ export function BookingForm() {
       luggage: 1,
       hours: 1,
       distanceKm: 0,
-      pickup: formatAirport(defaultCity.id, defaultCity.airport),
+      pickup: "",
       dropoff: "",
       originPlaceId: "",
       destinationPlaceId: "",
       promoCode: "",
       notes: "",
-      vehicleType: "suv",
+      vehicleType: "sedan",
       termsAccepted: false,
       termsVersion: company.termsVersion,
       customer: {
@@ -86,7 +97,7 @@ export function BookingForm() {
 
   const estimate = useMemo(
     () =>
-      estimateReservationPricing({
+      values.serviceId ? estimateReservationPricing({
         cityId: values.cityId,
         serviceId: values.serviceId,
         tourId: values.tourId,
@@ -95,7 +106,7 @@ export function BookingForm() {
         hours: values.hours,
         distanceKm: values.distanceKm,
         promoCode: values.promoCode
-      }),
+      }) : EMPTY_ESTIMATE,
     [
       values.cityId,
       values.distanceKm,
@@ -176,27 +187,120 @@ export function BookingForm() {
   const calculateRoute = routeMutation.mutate;
 
   useEffect(() => {
+    const previousScrollRestoration = window.history.scrollRestoration;
+    window.history.scrollRestoration = "manual";
+    const stored = readStoredSelections();
     const params = new URLSearchParams(window.location.search);
     const cityParam = params.get("city");
     const tourParam = params.get("tour");
     const serviceParam = params.get("service");
-    const city = cities.find((item) => item.slug === cityParam || item.id === cityParam);
-    const tour = tours.find((item) => item.id === tourParam || item.slug === tourParam);
-    const service = services.find((item) => item.id === serviceParam || item.slug === serviceParam);
+    const queryCity = cities.find((item) => item.slug === cityParam || item.id === cityParam);
+    const storedCity = cities.find((item) => item.id === stored?.cityId);
+    const queryTour = tours.find((item) => item.id === tourParam || item.slug === tourParam);
+    const storedTour = cityParam || serviceParam || tourParam
+      ? undefined
+      : tours.find((item) => item.id === stored?.tourId);
+    const tour = queryTour ?? storedTour;
+    const city = tour
+      ? cities.find((item) => item.id === tour.citySlug) ?? defaultCity
+      : queryCity ?? storedCity ?? defaultCity;
+    const queryService = services.find((item) => item.id === serviceParam || item.slug === serviceParam);
+    const storedService = services.find((item) => item.id === stored?.serviceId);
+    const requestedService = tour
+      ? services.find((item) => item.id === "private-tours")
+      : serviceParam
+        ? queryService
+        : storedService;
+    const service = requestedService && isServiceAvailable(city.id, requestedService.id)
+      ? requestedService
+      : undefined;
+    const initialAirportDirection: AirportDirection =
+      stored?.airportDirection === "to-airport" ? "to-airport" : "from-airport";
 
-    if (city) form.setValue("cityId", city.id);
+    form.setValue("cityId", city.id);
     if (tour) {
       const destination = getTourRouteDestination(tour.id);
-      form.setValue("cityId", tour.citySlug);
       form.setValue("serviceId", "private-tours");
       form.setValue("tourId", tour.id);
       form.setValue("dropoff", destination?.label ?? `${tour.name}, Colombia`);
       form.setValue("destinationPlaceId", destination?.placeId ?? "");
-      form.setValue("passengers", Math.max(2, tour.minimumPassengers ?? 2));
+      form.setValue("passengers", Math.max(stored?.passengers ?? 2, tour.minimumPassengers ?? 2));
+      setCompletedSteps([1]);
+      setCurrentStep(2);
     } else if (service) {
       form.setValue("serviceId", service.id);
+      if (service.id !== "private-tours") {
+        setCompletedSteps([1]);
+        setCurrentStep(2);
+      }
+      if (service.id === "airport-transfer") {
+        const airport = formatAirport(city.id, city.airport);
+        form.setValue("pickup", initialAirportDirection === "from-airport" ? airport : "");
+        form.setValue("dropoff", initialAirportDirection === "to-airport" ? airport : "");
+      }
     }
-  }, [form]);
+
+    if (isValidCount(stored?.passengers, 2, 50) && !tour) {
+      form.setValue("passengers", stored.passengers);
+    }
+    if (isLuggageRelevant(service?.id ?? (tour ? "private-tours" : "")) && isValidCount(stored?.luggage, 0, 80)) {
+      form.setValue("luggage", stored.luggage);
+    } else {
+      form.setValue("luggage", 0);
+    }
+    if (isValidCount(stored?.hours, 1, 24)) form.setValue("hours", stored.hours);
+    if (vehicles.some((vehicle) => vehicle.type === stored?.vehicleType)) {
+      form.setValue("vehicleType", stored?.vehicleType ?? "sedan");
+    }
+    if (isValidFutureDate(stored?.date)) form.setValue("date", stored.date);
+    if (typeof stored?.time === "string" && /^([01]\d|2[0-3]):[0-5]\d$/.test(stored.time)) {
+      form.setValue("time", stored.time);
+    }
+    setAirportDirection(initialAirportDirection);
+    if (isCountryCode(stored?.countryCode)) {
+      setCountryCode(stored.countryCode);
+    }
+
+    setInitialized(true);
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => formRef.current?.scrollIntoView({ block: "start" }));
+    });
+
+    return () => {
+      window.history.scrollRestoration = previousScrollRestoration;
+    };
+  }, [defaultCity, form]);
+
+  useEffect(() => {
+    if (!initialized) return;
+    const selections: StoredBookingSelections = {
+      cityId: values.cityId,
+      serviceId: values.serviceId,
+      tourId: values.tourId,
+      date: values.date,
+      time: values.time,
+      passengers: values.passengers,
+      luggage: values.luggage,
+      hours: values.hours,
+      vehicleType: values.vehicleType,
+      airportDirection,
+      countryCode
+    };
+    storeSelections(selections);
+  }, [
+    airportDirection,
+    countryCode,
+    initialized,
+    values.cityId,
+    values.date,
+    values.hours,
+    values.luggage,
+    values.passengers,
+    values.serviceId,
+    values.time,
+    values.tourId,
+    values.vehicleType
+  ]);
 
   useEffect(() => {
     window.dispatchEvent(
@@ -289,6 +393,9 @@ export function BookingForm() {
       setErrorStep(1);
       return;
     }
+    if (values.serviceId === "airport-transfer" && !values.pickup && !values.dropoff) {
+      setAirportEndpoints(airportDirection);
+    }
     setCompletedSteps((steps) => Array.from(new Set([...steps, 1])) as BookingStep[]);
     setErrorStep(undefined);
     setCurrentStep(2);
@@ -323,6 +430,14 @@ export function BookingForm() {
       setErrorStep(2);
       return;
     }
+    if (["airport-transfer", "transfers"].includes(values.serviceId) && !routeMutation.data) {
+      try {
+        await routeMutation.mutateAsync();
+      } catch {
+        setErrorStep(2);
+        return;
+      }
+    }
     setCompletedSteps((steps) => Array.from(new Set([...steps, 1, 2])) as BookingStep[]);
     setErrorStep(undefined);
     setCurrentStep(3);
@@ -348,6 +463,10 @@ export function BookingForm() {
     form.clearErrors("tourId");
     form.setValue("tourId", "");
     form.setValue("distanceKm", 0);
+    form.setValue("hours", serviceId === "hourly" ? Math.max(values.hours ?? 1, 1) : 1);
+    form.setValue("luggage", isLuggageRelevant(serviceId) ? values.luggage : 0);
+    if (serviceId !== "airport-transfer") setFlightNumber("");
+    if (serviceId !== "medical-tourism") setMobilityNeeds("");
     routeMutation.reset();
     if (serviceId === "airport-transfer") {
       setAirportEndpoints(airportDirection);
@@ -400,8 +519,10 @@ export function BookingForm() {
 
   return (
     <form
+      ref={formRef}
+      id="booking-form"
       onSubmit={form.handleSubmit(submitReservation, handleInvalid)}
-      className="pb-28 lg:pb-0"
+      className="scroll-mt-24 pb-28 lg:pb-0"
       noValidate
     >
       <input type="hidden" {...form.register("termsVersion")} />
@@ -448,17 +569,14 @@ export function BookingForm() {
                   airportDirection={airportDirection}
                   flightNumber={flightNumber}
                   mobilityNeeds={mobilityNeeds}
-                  tourDestination={values.dropoff}
                   minimumPassengers={minimumPassengers}
                   routeData={routeMutation.data}
-                  routePending={routePending}
                   routeCalculating={routeMutation.isPending}
                   departureAt={departureAt}
                   onValueChange={setTripValue}
                   onAirportDirectionChange={setAirportEndpoints}
                   onFlightNumberChange={setFlightNumber}
                   onMobilityNeedsChange={setMobilityNeeds}
-                  onCalculateRoute={() => routeMutation.mutate()}
                   onBack={() => handleStepChange(1)}
                   onContinue={continueFromTrip}
                 />
@@ -484,7 +602,7 @@ export function BookingForm() {
           </AnimatePresence>
         </div>
 
-        <aside className="hidden lg:block">
+        {values.serviceId ? <aside className="hidden lg:block">
           <BookingSummary
             values={values}
             estimate={estimate}
@@ -493,7 +611,7 @@ export function BookingForm() {
             language={language}
             className="sticky top-24 border-primary/15"
           />
-        </aside>
+        </aside> : null}
       </div>
 
       <MobileBookingSummary
@@ -503,7 +621,7 @@ export function BookingForm() {
         routePending={routePending}
         language={language}
         currentStep={currentStep}
-        pending={reservationMutation.isPending}
+        pending={reservationMutation.isPending || routeMutation.isPending}
         onContinue={currentStep === 1 ? continueFromExperience : continueFromTrip}
       />
     </form>
@@ -522,4 +640,63 @@ function formatAirport(cityId: string, fallback: string) {
   if (cityId === "bogota") return "Aeropuerto Internacional El Dorado";
   if (cityId === "medellin") return "Aeropuerto Internacional José María Córdova";
   return fallback;
+}
+
+type StoredBookingSelections = {
+  cityId: string;
+  serviceId: string;
+  tourId?: string;
+  date: string;
+  time: string;
+  passengers: number;
+  luggage: number;
+  hours?: number;
+  vehicleType: ReservationInput["vehicleType"];
+  airportDirection: AirportDirection;
+  countryCode: string;
+};
+
+function readStoredSelections(): Partial<StoredBookingSelections> | null {
+  try {
+    const value = window.sessionStorage.getItem(BOOKING_SELECTIONS_KEY);
+    if (!value) return null;
+    const parsed: unknown = JSON.parse(value);
+    return parsed && typeof parsed === "object"
+      ? parsed as Partial<StoredBookingSelections>
+      : null;
+  } catch {
+    window.sessionStorage.removeItem(BOOKING_SELECTIONS_KEY);
+    return null;
+  }
+}
+
+function storeSelections(selections: StoredBookingSelections) {
+  try {
+    window.sessionStorage.setItem(BOOKING_SELECTIONS_KEY, JSON.stringify(selections));
+  } catch {
+    // The booking remains usable when browser storage is unavailable.
+  }
+}
+
+function isServiceAvailable(cityId: string, serviceId: string) {
+  const city = cities.find((item) => item.id === cityId);
+  return Boolean(city?.serviceIds?.includes(serviceId) || serviceId === "events");
+}
+
+function isValidCount(value: unknown, min: number, max: number): value is number {
+  return typeof value === "number" && Number.isInteger(value) && value >= min && value <= max;
+}
+
+function isValidFutureDate(value: unknown): value is string {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Bogota" }).format(new Date());
+  return value >= today;
+}
+
+function isCountryCode(value: unknown): value is string {
+  return typeof value === "string" && ["+57", "+1", "+34", "+52", "+51", "+56"].includes(value);
+}
+
+function isLuggageRelevant(serviceId: string) {
+  return ["airport-transfer", "transfers", "medical-tourism"].includes(serviceId);
 }
