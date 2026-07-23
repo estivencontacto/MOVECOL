@@ -19,7 +19,7 @@ export function LoginForm() {
     setIsLoading(true);
     const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({
-      email: String(formData.get("email")),
+      email: `${String(formData.get("username")).trim().toLowerCase()}@admin.movecolombia.invalid`,
       password: String(formData.get("password"))
     });
     setIsLoading(false);
@@ -40,8 +40,8 @@ export function LoginForm() {
       <CardContent>
         <form action={onSubmit} className="space-y-5">
           <div className="space-y-2">
-            <Label htmlFor="email">Correo</Label>
-            <Input id="email" name="email" type="email" required />
+            <Label htmlFor="username">Usuario</Label>
+            <Input id="username" name="username" autoComplete="username" required />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Contrasena</Label>
