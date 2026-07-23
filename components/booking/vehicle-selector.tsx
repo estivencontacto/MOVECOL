@@ -13,7 +13,6 @@ import {
   getVehiclePassengerCapacity,
   isQuoteOnlyVehicle
 } from "@/lib/domain/vehicle-rules";
-import { getVehicleSurcharge } from "@/lib/services/pricing";
 import { cn } from "@/lib/utils";
 
 export function VehicleSelector({
@@ -46,7 +45,6 @@ export function VehicleSelector({
         const selected = value === vehicle.type;
         const passengerCapacity = getVehiclePassengerCapacity(vehicle.type, serviceId);
         const luggageCapacity = getVehicleLuggageCapacity(vehicle.type);
-        const surcharge = getVehicleSurcharge(vehicle.type);
 
         return (
           <motion.button
@@ -92,11 +90,6 @@ export function VehicleSelector({
                 <p className="mt-3 flex items-center gap-1 text-xs font-semibold text-primary">
                   <Sparkles className="size-3.5" aria-hidden />
                   {language === "EN" ? "Recommended" : "Recomendado"}
-                </p>
-              ) : null}
-              {surcharge > 0 ? (
-                <p className="mt-2 text-xs font-semibold">
-                  + COP ${surcharge.toLocaleString("es-CO")}
                 </p>
               ) : null}
               {disabled ? (

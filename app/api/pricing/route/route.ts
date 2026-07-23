@@ -97,7 +97,9 @@ export async function POST(request: Request) {
       durationText: result.route.durationText,
       originAddress: result.route.originAddress,
       destinationAddress: result.route.destinationAddress,
-      ...pricing
+      total: pricing.amount,
+      requiresAvailabilityCheck: pricing.requiresAvailabilityCheck,
+      quoteOnly: pricing.quoteOnly
     });
   } catch (error) {
     console.error("Route pricing failed", error);

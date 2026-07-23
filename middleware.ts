@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { getSupabasePublicCredentials } from "@/lib/supabase/env";
+const DRIVER_SESSION_COOKIE = "move_driver_session";
 
 type CookieToSet = {
   name: string;
@@ -14,7 +15,20 @@ export async function middleware(request: NextRequest) {
   const { url: supabaseUrl, publishableKey } = getSupabasePublicCredentials();
 
   const isAdminPath = request.nextUrl.pathname.startsWith("/admin");
+  const isDriverPath = request.nextUrl.pathname.startsWith("/conductor");
+  const isDriverLoginPath = request.nextUrl.pathname === "/conductor/login";
   const isConfigErrorPath = request.nextUrl.pathname === "/admin/config-error";
+
+  if (isDriverPath) {
+    const hasDriverSession = Boolean(request.cookies.get(DRIVER_SESSION_COOKIE)?.value);
+    if (!isDriverLoginPath && !hasDriverSession) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/conductor/login";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+    return response;
+  }
 
   if (!supabaseUrl || !publishableKey) {
     if (isAdminPath && !isConfigErrorPath) {
@@ -61,7 +75,7 @@ export async function middleware(request: NextRequest) {
       .eq("id", user.id)
       .single();
 
-    if (!profile || !["admin", "operator"].includes(profile.role)) {
+    if (!profile || profile.role !== "admin") {
       const url = request.nextUrl.clone();
       url.pathname = "/";
       return NextResponse.redirect(url);
@@ -72,5 +86,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"]
+  matcher: ["/admin/:path*", "/conductor/:path*"]
 };

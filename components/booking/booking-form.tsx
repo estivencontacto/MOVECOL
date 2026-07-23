@@ -3,13 +3,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { BookingStepper } from "@/components/booking/booking-stepper";
 import type {
   AirportDirection,
   BookingStep,
+  PublicPriceEstimate,
   RoutePricingResponse
 } from "@/components/booking/booking-types";
 import { BookingSummary } from "@/components/booking/booking-summary";
@@ -22,17 +23,13 @@ import { cities, getTourRouteDestination, services, tours, vehicles } from "@/li
 import { reservationSchema, type ReservationInput } from "@/lib/domain/schemas";
 import { getVehicleCompatibility } from "@/lib/domain/vehicle-rules";
 import { company } from "@/lib/legal/company";
-import { estimateReservationPricing, type PriceEstimate } from "@/lib/services/pricing";
 
 const googleMapsBrowserKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY;
 const BOOKING_SELECTIONS_KEY = "move:booking-selections:v1";
-const EMPTY_ESTIMATE: PriceEstimate = {
-  amount: 0,
-  subtotal: 0,
-  gatewayFee: 0,
+const EMPTY_ESTIMATE: PublicPriceEstimate = {
+  total: 0,
   requiresAvailabilityCheck: false,
-  quoteOnly: false,
-  breakdown: []
+  quoteOnly: false
 };
 const routeKeys: Array<keyof TripStepValues> = [
   "cityId",
@@ -95,30 +92,6 @@ export function BookingForm() {
   const minimumPassengers = selectedTour?.minimumPassengers ?? 2;
   const departureAt = values.date && values.time ? `${values.date}T${values.time}:00-05:00` : undefined;
 
-  const estimate = useMemo(
-    () =>
-      values.serviceId ? estimateReservationPricing({
-        cityId: values.cityId,
-        serviceId: values.serviceId,
-        tourId: values.tourId,
-        vehicleType: values.vehicleType,
-        passengers: values.passengers,
-        hours: values.hours,
-        distanceKm: values.distanceKm,
-        promoCode: values.promoCode
-      }) : EMPTY_ESTIMATE,
-    [
-      values.cityId,
-      values.distanceKm,
-      values.hours,
-      values.passengers,
-      values.promoCode,
-      values.serviceId,
-      values.tourId,
-      values.vehicleType
-    ]
-  );
-
   const routeMutation = useMutation({
     mutationFn: async () => {
       const current = form.getValues();
@@ -157,6 +130,7 @@ export function BookingForm() {
       });
     }
   });
+  const estimate = routeMutation.data ?? EMPTY_ESTIMATE;
 
   const reservationMutation = useMutation({
     mutationFn: async (payload: ReservationInput) => {

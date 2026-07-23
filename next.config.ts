@@ -13,12 +13,12 @@ const contentSecurityPolicy = [
   "object-src 'none'",
   "frame-ancestors 'none'",
   "form-action 'self' https://checkout.wompi.co",
-  `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ""} https://maps.googleapis.com https://maps.gstatic.com`,
+  `script-src 'self' 'unsafe-inline'${isDevelopment ? " 'unsafe-eval'" : ""} https://maps.googleapis.com https://maps.gstatic.com https://challenges.cloudflare.com`,
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
   "img-src 'self' data: blob: https://images.unsplash.com https://maps.googleapis.com https://maps.gstatic.com https://*.googleapis.com https://*.gstatic.com",
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://maps.googleapis.com https://*.googleapis.com",
-  "frame-src 'self' https://www.google.com https://maps.google.com",
+  "frame-src 'self' https://www.google.com https://maps.google.com https://challenges.cloudflare.com",
   "worker-src 'self' blob:",
   "manifest-src 'self'",
   ...(!isDevelopment ? ["upgrade-insecure-requests"] : [])
@@ -62,6 +62,10 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/admin/:path*",
+        headers: [{ key: "Cache-Control", value: "private, no-store, max-age=0" }]
+      },
+      {
+        source: "/conductor/:path*",
         headers: [{ key: "Cache-Control", value: "private, no-store, max-age=0" }]
       }
     ];

@@ -10,6 +10,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "test:security": "node scripts/security-check.mjs",
     "deploy-check": "node scripts/deploy-check.mjs --production",
     "payments:check": "node scripts/check-payments-readiness.mjs",
     "format": "prettier --write .",

@@ -1,3 +1,4 @@
+import "server-only";
 import { tours } from "@/lib/data/catalog";
 import type { ReservationInput } from "@/lib/domain/schemas";
 import type { VehicleType } from "@/lib/domain/types";

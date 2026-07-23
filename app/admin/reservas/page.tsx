@@ -13,18 +13,20 @@ export const metadata: Metadata = {
 
 export default async function AdminReservationsPage() {
   let rows: ReservationRow[] = [];
+  let drivers: Array<{ id: string; full_name: string }> = [];
 
   if (isSupabaseConfigured()) {
     const supabase = await createClient();
-    const { data } = await supabase
+    const [{ data }, { data: driverData }] = await Promise.all([supabase
       .from("reservations")
       .select(
-        "id,reservation_date,reservation_time,status,passengers,pickup_address,dropoff_address,customers(full_name,email,phone),payments(amount_cents,status)"
+        "id,reservation_date,reservation_time,status,passengers,pickup_address,dropoff_address,driver_id,customers(full_name,email,phone),payments(amount_cents,status)"
       )
       .order("created_at", { ascending: false })
-      .limit(50);
+      .limit(200), supabase.from("drivers").select("id,full_name").eq("status", "active").order("full_name")]);
 
     rows = (data ?? []) as unknown as ReservationRow[];
+    drivers = driverData ?? [];
   }
 
   return (
@@ -34,10 +36,10 @@ export default async function AdminReservationsPage() {
           <p className="eyebrow">Reservas</p>
           <h1 className="mt-3 text-4xl font-semibold">Calendario y solicitudes</h1>
           <p className="mt-3 text-muted-foreground">
-            Vista inicial con busqueda/filtros pendientes para el siguiente incremento del panel.
+            Consulta, filtra, asigna, reasigna y cancela viajes.
           </p>
         </div>
-        <ReservationsTable rows={rows} />
+        <ReservationsTable rows={rows} drivers={drivers} />
       </div>
     </section>
   );

@@ -2,13 +2,12 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import { ChevronUp, X } from "lucide-react";
-import type { BookingLanguage, BookingStep, RoutePricingResponse } from "@/components/booking/booking-types";
+import type { BookingLanguage, BookingStep, PublicPriceEstimate, RoutePricingResponse } from "@/components/booking/booking-types";
 import { BookingSummaryDetails } from "@/components/booking/booking-summary";
 import { Price } from "@/components/preferences/site-preferences";
 import { Button } from "@/components/ui/button";
 import { services, tours } from "@/lib/data/catalog";
 import type { ReservationInput } from "@/lib/domain/schemas";
-import type { PriceEstimate } from "@/lib/services/pricing";
 
 export function MobileBookingSummary({
   values,
@@ -21,7 +20,7 @@ export function MobileBookingSummary({
   onContinue
 }: {
   values: ReservationInput;
-  estimate: PriceEstimate;
+  estimate: PublicPriceEstimate;
   routeData?: RoutePricingResponse;
   routePending: boolean;
   language: BookingLanguage;
@@ -43,7 +42,7 @@ export function MobileBookingSummary({
               {language === "EN" ? "Price to confirm" : "Precio por confirmar"}
             </p>
           ) : (
-            <Price value={estimate.amount} className="text-lg font-black" />
+            <Price value={estimate.total} className="text-lg font-black" />
           )}
         </div>
         <Dialog.Root>

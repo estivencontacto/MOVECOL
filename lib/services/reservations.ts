@@ -62,7 +62,7 @@ export async function createReservation(input: ReservationInput) {
     service_id: service.id,
     tour_id: tour?.id ?? null,
     vehicle_type: vehicle.type,
-    status: "pending_payment",
+    status: "pending",
     reservation_date: input.date,
     reservation_time: input.time,
     passengers: input.passengers,

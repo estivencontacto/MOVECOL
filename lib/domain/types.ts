@@ -1,4 +1,4 @@
-export type UserRole = "admin" | "operator" | "customer";
+export type UserRole = "admin" | "operator" | "driver" | "customer";
 
 export type ServiceCategory =
   | "airport-transfer"
@@ -11,8 +11,12 @@ export type ServiceCategory =
 
 export type ReservationStatus =
   | "draft"
+  | "pending"
   | "pending_payment"
   | "confirmed"
+  | "accepted"
+  | "en_route"
+  | "started"
   | "completed"
   | "cancelled";
 

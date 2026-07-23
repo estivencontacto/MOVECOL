@@ -15,6 +15,9 @@ const requiredGroups = [
   ["WOMPI_INTEGRITY_SECRET"],
   ["GOOGLE_MAPS_API_KEY"],
   ["NEXT_PUBLIC_GOOGLE_MAPS_BROWSER_KEY"],
+  ["DRIVER_SESSION_SECRET"],
+  ["NEXT_PUBLIC_TURNSTILE_SITE_KEY"],
+  ["TURNSTILE_SECRET_KEY"],
   ["OPERATIONS_EMAIL"]
 ];
 
@@ -85,6 +88,9 @@ console.log("Deployment environment looks ready.");
 function validateProductionConfiguration() {
   const errors = [];
   const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+  if ((process.env.DRIVER_SESSION_SECRET ?? "").length < 32) {
+    errors.push("DRIVER_SESSION_SECRET must contain at least 32 characters.");
+  }
 
   try {
     const parsedUrl = new URL(appUrl);

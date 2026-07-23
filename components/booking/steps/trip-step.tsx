@@ -19,13 +19,11 @@ import { PlaceAutocompleteInput } from "@/components/booking/place-autocomplete-
 import { QuantitySelector } from "@/components/booking/quantity-selector";
 import { RouteMiniMap } from "@/components/booking/route-mini-map";
 import { VehicleSelector } from "@/components/booking/vehicle-selector";
-import { Price } from "@/components/preferences/site-preferences";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { ReservationInput } from "@/lib/domain/schemas";
-import { COP_PER_KM } from "@/lib/services/pricing";
 import { cn } from "@/lib/utils";
 
 export type TripStepValues = Pick<
@@ -91,9 +89,6 @@ export function TripStep({
   const isTransfer = values.serviceId === "transfers";
   const showsLuggage = isAirport || isTransfer || isMedical;
   const hasMapRoute = values.pickup.trim().length >= 4 && values.dropoff.trim().length >= 4;
-  const transferBaseAmount = routeData && isTransfer
-    ? Math.round(routeData.distanceKm * COP_PER_KM)
-    : 0;
 
   return (
     <section aria-labelledby="trip-title">
@@ -248,19 +243,11 @@ export function TripStep({
           />
           ) : null}
           {routeData ? (
-            <div className={cn("mt-3 grid gap-3 border bg-muted/45 p-4 text-sm", isTransfer ? "sm:grid-cols-3" : "sm:grid-cols-2")} aria-live="polite">
+            <div className="mt-3 grid gap-3 border bg-muted/45 p-4 text-sm sm:grid-cols-2" aria-live="polite">
               <span>
                 <strong>{routeData.distanceKm.toFixed(1)} km</strong>
                 <span className="block text-xs text-muted-foreground">{language === "EN" ? "Distance" : "Distancia"}</span>
               </span>
-              {isTransfer ? (
-                <span>
-                  <strong>{routeData.distanceKm.toFixed(1)} km × COP $4.500</strong>
-                  <span className="block text-xs text-muted-foreground">
-                    {language === "EN" ? "Base price: " : "Precio base: "}<Price value={transferBaseAmount} />
-                  </span>
-                </span>
-              ) : null}
               <span>
                 <strong>{routeData.durationText ?? "-"}</strong>
                 <span className="block text-xs text-muted-foreground">{language === "EN" ? "Estimated duration" : "Duración estimada"}</span>

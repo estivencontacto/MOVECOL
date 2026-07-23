@@ -25,7 +25,7 @@ export function enforceRateLimit(request: Request, options: RateLimitOptions) {
   const now = Date.now();
   cleanupExpiredBuckets(now);
 
-  const clientKey = getClientKey(request);
+  const clientKey = getRequestClientIp(request);
   const key = `${options.key}:${clientKey}`;
   const current = store.get(key);
 
@@ -55,7 +55,7 @@ export function enforceRateLimit(request: Request, options: RateLimitOptions) {
   );
 }
 
-function getClientKey(request: Request) {
+export function getRequestClientIp(request: Request) {
   return (
     request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
     request.headers.get("x-real-ip") ||
