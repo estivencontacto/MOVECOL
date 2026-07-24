@@ -23,6 +23,13 @@ export type ReservationRow = {
     amount_cents: number | null;
     status: string | null;
   }>;
+  reservation_observations?: Array<{
+    id: number;
+    action: string;
+    observation: string;
+    author_name: string;
+    created_at: string;
+  }>;
 };
 
 export function ReservationsTable({ rows: initialRows, drivers }: { rows: ReservationRow[]; drivers: Array<{ id: string; full_name: string }> }) {
@@ -38,8 +45,57 @@ export function ReservationsTable({ rows: initialRows, drivers }: { rows: Reserv
     if (!response.ok) return toast.error("No se pudo actualizar la reserva");
     setRows((items) => items.map((row) => row.id === id ? { ...row, ...(changes.driverId !== undefined ? { driver_id: changes.driverId as string } : {}), ...(changes.status ? { status: changes.status as string } : {}) } : row));
   }
+  async function updateWithObservation(id: string, statusValue: string, action: "close" | "reopen") {
+    const observation = window.prompt("Escribe la observación obligatoria");
+    if (!observation?.trim()) return;
+    await update(id, { status: statusValue, observation: observation.trim(), observationAction: action });
+  }
+  async function createReservation(formData: FormData) {
+    const response = await fetch("/api/admin/reservations", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        customerName: formData.get("customerName"),
+        customerEmail: formData.get("customerEmail"),
+        customerPhone: formData.get("customerPhone"),
+        cityId: formData.get("cityId"),
+        serviceId: "private-tours",
+        tourId: formData.get("tourId") || null,
+        reservationDate: formData.get("reservationDate"),
+        reservationTime: formData.get("reservationTime"),
+        pickupAddress: formData.get("pickupAddress"),
+        dropoffAddress: formData.get("dropoffAddress"),
+        passengers: Number(formData.get("passengers")),
+        observation: formData.get("observation")
+      })
+    });
+    const payload = await response.json();
+    if (!response.ok) {
+      toast.error(payload.error ?? "No se pudo crear la reserva");
+      return;
+    }
+    toast.success("Reserva creada");
+    window.location.reload();
+  }
   return (
     <div className="overflow-hidden rounded-lg border bg-card">
+      <details className="border-b p-4">
+        <summary className="cursor-pointer font-semibold">Crear reserva administrativa</summary>
+        <form action={createReservation} className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <Input name="customerName" placeholder="Nombre del cliente" aria-label="Nombre del cliente" required />
+          <Input name="customerEmail" type="email" placeholder="Correo" aria-label="Correo del cliente" required />
+          <Input name="customerPhone" placeholder="Teléfono" aria-label="Teléfono del cliente" required />
+          <select name="cityId" aria-label="Ciudad" className="h-10 rounded-md border bg-background px-3"><option value="bogota">Bogotá</option><option value="medellin">Medellín</option></select>
+          <Input name="tourId" placeholder="ID del tour (opcional)" aria-label="ID del tour" />
+          <Input name="reservationDate" type="date" aria-label="Fecha" required />
+          <Input name="reservationTime" type="time" aria-label="Hora" required />
+          <Input name="passengers" type="number" min="1" defaultValue="1" aria-label="Pasajeros" required />
+          <Input name="pickupAddress" placeholder="Recogida" aria-label="Recogida" required />
+          <Input name="dropoffAddress" placeholder="Destino" aria-label="Destino" required />
+          <Input name="observation" placeholder="Observación de apertura" aria-label="Observación de apertura" required />
+          <Button>Crear reserva</Button>
+        </form>
+      </details>
       <div className="flex flex-wrap gap-3 border-b p-4"><Input className="max-w-sm" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar cliente o ruta" /><select className="rounded-md border bg-background px-3" value={status} onChange={(event) => setStatus(event.target.value)}><option value="">Todos los estados</option>{["pending","confirmed","accepted","en_route","started","completed","cancelled"].map((item) => <option key={item}>{item}</option>)}</select></div>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[860px] text-left text-sm">
@@ -51,7 +107,7 @@ export function ReservationsTable({ rows: initialRows, drivers }: { rows: Reserv
               <th className="px-4 py-3">Pasajeros</th>
               <th className="px-4 py-3">Pago</th>
               <th className="px-4 py-3">Estado</th>
-              <th className="px-4 py-3">Conductor</th>
+              <th className="px-4 py-3">Conductor y acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y">
@@ -78,7 +134,22 @@ export function ReservationsTable({ rows: initialRows, drivers }: { rows: Reserv
                   <td className="px-4 py-4">
                     <select value={row.status} onChange={(event) => update(row.id, { status: event.target.value })} className="rounded border bg-background p-2">{["pending","confirmed","accepted","en_route","started","completed","cancelled"].map((item) => <option key={item}>{item}</option>)}</select>
                   </td>
-                  <td className="px-4 py-4"><select value={row.driver_id ?? ""} onChange={(event) => update(row.id, { driverId: event.target.value || null })} className="max-w-44 rounded border bg-background p-2"><option value="">Sin asignar</option>{drivers.map((driver) => <option key={driver.id} value={driver.id}>{driver.full_name}</option>)}</select>{row.status !== "cancelled" ? <Button className="ml-2" variant="ghost" size="sm" onClick={() => update(row.id, { status: "cancelled" })}>Cancelar</Button> : null}</td>
+                  <td className="px-4 py-4">
+                    <select aria-label="Conductor asignado" value={row.driver_id ?? ""} onChange={(event) => update(row.id, { driverId: event.target.value || null })} className="max-w-44 rounded border bg-background p-2"><option value="">Sin asignar</option>{drivers.map((driver) => <option key={driver.id} value={driver.id}>{driver.full_name}</option>)}</select>
+                    {row.status !== "cancelled"
+                      ? <Button className="ml-2" variant="ghost" size="sm" onClick={() => updateWithObservation(row.id, "cancelled", "close")}>Cerrar</Button>
+                      : <Button className="ml-2" variant="ghost" size="sm" onClick={() => updateWithObservation(row.id, "pending", "reopen")}>Reabrir</Button>}
+                    {row.reservation_observations?.length ? (
+                      <details className="mt-3 max-w-xs">
+                        <summary className="cursor-pointer text-xs font-medium">Observaciones ({row.reservation_observations.length})</summary>
+                        <ul className="mt-2 space-y-2 text-xs text-muted-foreground">
+                          {row.reservation_observations.map((item) => (
+                            <li key={item.id}><span className="font-medium text-foreground">{item.author_name}</span> · {new Date(item.created_at).toLocaleString("es-CO")}<br />{item.observation}</li>
+                          ))}
+                        </ul>
+                      </details>
+                    ) : null}
+                  </td>
                 </tr>
               );
             })}

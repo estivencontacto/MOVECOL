@@ -7,7 +7,8 @@ const driverSchema = z.object({
   id: z.string().uuid().optional(),
   fullName: z.string().trim().min(3).max(120),
   documentId: z.string().regex(/^\d{5,20}$/),
-  phone: z.string().trim().min(7).max(24)
+  phone: z.string().trim().max(24).optional().default(""),
+  status: z.enum(["active", "inactive"]).optional()
 });
 
 export async function GET() {
@@ -38,7 +39,14 @@ export async function PATCH(request: Request) {
   if (!parsed.success || !parsed.data.id) return NextResponse.json({ error: "Datos inválidos" }, { status: 422 });
   const value = parsed.data;
   const { data, error } = await auth.supabase.from("drivers").update({
-    full_name: value.fullName, document_id: value.documentId, phone: value.phone, updated_at: new Date().toISOString()
+    full_name: value.fullName,
+    document_id: value.documentId,
+    phone: value.phone,
+    ...(value.status ? {
+      status: value.status,
+      deactivated_at: value.status === "inactive" ? new Date().toISOString() : null
+    } : {}),
+    updated_at: new Date().toISOString()
   }).eq("id", value.id).select("id,full_name,document_id,phone,status").single();
   if (error) return NextResponse.json({ error: error.message }, { status: 409 });
   return NextResponse.json({ driver: data });

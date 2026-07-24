@@ -20,7 +20,7 @@ export default async function AdminReservationsPage() {
     const [{ data }, { data: driverData }] = await Promise.all([supabase
       .from("reservations")
       .select(
-        "id,reservation_date,reservation_time,status,passengers,pickup_address,dropoff_address,driver_id,customers(full_name,email,phone),payments(amount_cents,status)"
+        "id,reservation_date,reservation_time,status,passengers,pickup_address,dropoff_address,driver_id,customers(full_name,email,phone),payments(amount_cents,status),reservation_observations(id,action,observation,author_name,created_at)"
       )
       .order("created_at", { ascending: false })
       .limit(200), supabase.from("drivers").select("id,full_name").eq("status", "active").order("full_name")]);
