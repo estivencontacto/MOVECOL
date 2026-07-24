@@ -136,7 +136,8 @@ export async function sendPaymentConfirmedEmail({
     method: "POST",
     headers: {
       Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Idempotency-Key": `payment-confirmed-${reservationId}`
     },
     body: JSON.stringify({
       from: process.env.EMAIL_FROM,
