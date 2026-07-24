@@ -14,12 +14,6 @@ const resources = {
     columns: ["Nombre", "Slug", "Estado"],
     sample: [["Medellin", "medellin", "Activa"], ["Bogota", "bogota", "Activa"]]
   },
-  tours: {
-    title: "Tours",
-    description: "Administra galerias, inclusiones, duracion, horarios y precios base.",
-    columns: ["Tour", "Ciudad", "Precio base"],
-    sample: [["Guatape", "Medellin", "$850.000"], ["Monserrate", "Bogota", "$310.000"]]
-  },
   servicios: {
     title: "Servicios",
     description: "Gestiona descripcion, beneficios, proceso, preguntas frecuentes y reserva.",
@@ -31,12 +25,6 @@ const resources = {
     description: "Gestiona capacidad, equipaje, fotografias y disponibilidad.",
     columns: ["Nombre", "Tipo", "Capacidad"],
     sample: [["SUV Executive", "SUV", "4"], ["Van Privada", "Van", "10"]]
-  },
-  conductores: {
-    title: "Conductores",
-    description: "Administra perfiles, documentos, contacto y estado operativo.",
-    columns: ["Nombre", "Telefono", "Estado"],
-    sample: [["Pendiente", "-", "Sin asignar"]]
   },
   clientes: {
     title: "Clientes",
