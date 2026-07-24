@@ -96,7 +96,7 @@ export async function POST(request: Request) {
     }
 
     await Promise.all([
-      sendReservationEmail(reservationInput, reservation.id),
+      sendReservationEmail(reservationInput, reservation.id, reservation.expectedAmountCents),
       queueWhatsappConfirmation(reservationInput, reservation.id)
     ]);
 

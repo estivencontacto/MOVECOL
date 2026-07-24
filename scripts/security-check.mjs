@@ -10,6 +10,8 @@ const completionMigration = read("supabase/migrations/009_admin_completion.sql")
 const driverApi = read("app/api/conductor/trips/route.ts");
 const driverLogin = read("app/api/conductor/session/route.ts");
 const driverSession = read("lib/auth/driver-session.ts");
+const catalog = read("lib/data/catalog.ts");
+const reservationEmail = read("lib/services/email.ts");
 
 assert.match(route, /total: pricing\.amount/);
 assert.doesNotMatch(route, /\.\.\.pricing|subtotal:|gatewayFee:|breakdown:/);
@@ -33,5 +35,10 @@ assert.match(driverLogin, /GENERIC_ERROR/);
 assert.match(driverSession, /expiresAt/);
 assert.match(driverSession, /httpOnly|DRIVER_SESSION_COOKIE/);
 assert.doesNotMatch(driverLogin, /role\s*:/);
+assert.match(catalog, /id: "bog-tour-prueba"[\s\S]*basePrice: 1500/);
+assert.match(reservationEmail, /reservation-customer-/);
+assert.match(reservationEmail, /reservation-operations-/);
+assert.match(reservationEmail, /Contactar por WhatsApp/);
+assert.doesNotMatch(reservationEmail, /to: \[input\.customer\.email, process\.env\.OPERATIONS_EMAIL\]/);
 
 console.log("Security contract checks passed.");

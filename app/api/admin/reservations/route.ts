@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireRole } from "@/lib/auth/authorization";
+import { cities, services, tours } from "@/lib/data/catalog";
+import { sendReservationNotifications } from "@/lib/services/email";
 import { enforceTrustedOrigin, readJsonBody } from "@/lib/services/request-security";
 
 const updateSchema = z.object({
@@ -94,6 +96,25 @@ export async function POST(request: Request) {
     observation: value.observation,
     author_id: auth.user.id,
     author_name: auth.user.user_metadata?.full_name ?? auth.user.email ?? "Administrador"
+  });
+  const city = cities.find((item) => item.id === value.cityId);
+  const service = services.find((item) => item.id === value.serviceId);
+  const tour = value.tourId ? tours.find((item) => item.id === value.tourId) : null;
+  await sendReservationNotifications({
+    reservationId: reservation.id,
+    customerName: value.customerName,
+    customerEmail: value.customerEmail,
+    customerPhone: value.customerPhone,
+    city: city?.name ?? value.cityId,
+    service: service?.title ?? value.serviceId,
+    tour: tour?.name ?? value.tourId,
+    date: value.reservationDate,
+    time: value.reservationTime,
+    passengers: value.passengers,
+    pickup: value.pickupAddress,
+    dropoff: value.dropoffAddress,
+    notes: value.observation,
+    amountCents: expectedAmountCents
   });
   return NextResponse.json({ reservation }, { status: 201 });
 }

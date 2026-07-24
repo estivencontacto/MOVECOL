@@ -600,7 +600,7 @@ export const tours: Tour[] = [
     excludes: ["No corresponde a un servicio turístico real"],
     duration: "Prueba",
     schedules: ["08:00", "13:00"],
-    basePrice: 1000,
+    basePrice: 1500,
     pricingMode: "global",
     minimumPassengers: 1,
     heroImage: localImage("/images/BOGOTA/TOURS/CITY TOUR BOGOTA/HERO/ChatGPT Image 1 jul 2026, 08_56_32 a.m.png"),
