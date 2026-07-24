@@ -590,6 +590,31 @@ export const tours: Tour[] = [
     featured: true
   },
   {
+    id: "bog-tour-prueba",
+    citySlug: "bogota",
+    name: "Tour de prueba",
+    slug: "tour-de-prueba",
+    description:
+      "Producto de prueba para verificar de principio a fin la reserva y la pasarela de pagos de Move Colombia.",
+    includes: ["Acceso al flujo real de reserva y pago"],
+    excludes: ["No corresponde a un servicio turístico real"],
+    duration: "Prueba",
+    schedules: ["08:00", "13:00"],
+    basePrice: 1000,
+    pricingMode: "global",
+    minimumPassengers: 1,
+    heroImage: localImage("/images/BOGOTA/TOURS/CITY TOUR BOGOTA/HERO/ChatGPT Image 1 jul 2026, 08_56_32 a.m.png"),
+    cardImage: localImage("/images/BOGOTA/TOURS/CITY TOUR BOGOTA/CARD/33860894418_cbc353dd66_b.jpg"),
+    gallery: gallery(
+      "/images/BOGOTA/TOURS/CITY TOUR BOGOTA/GALERIA/1.jpg",
+      "/images/BOGOTA/TOURS/CITY TOUR BOGOTA/GALERIA/53189280960_f52f80db0e_z.jpg"
+    ),
+    recommendations: ["Usar únicamente para comprobar el proceso de pago"],
+    keywords: ["tour de prueba", "prueba pasarela de pagos"],
+    featured: false,
+    isTest: true
+  },
+  {
     id: "bog-hacienda-napoles",
     citySlug: "bogota",
     name: "Hacienda Napoles",
@@ -921,6 +946,7 @@ export const tourRouteDestinations: Record<string, TourRouteDestination> = {
   "med-miradores": { label: "Mirador Las Palmas, Medellín, Colombia" },
   "med-santa-fe": { label: "Santa Fe de Antioquia, Antioquia, Colombia" },
   "bog-city-tour": { label: "Plaza de Bolívar, Bogotá, Colombia" },
+  "bog-tour-prueba": { label: "Bogotá, Colombia" },
   "bog-hacienda-napoles": { label: "Hacienda Nápoles, Puerto Triunfo, Antioquia, Colombia" },
   "bog-miradores": { label: "Mirador La Calera, Bogotá, Colombia" },
   "bog-monserrate": { label: "Cerro de Monserrate, Bogotá, Colombia" },

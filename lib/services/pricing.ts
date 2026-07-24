@@ -40,6 +40,17 @@ export function estimateReservationPricing(
   }
 
   if (tour) {
+    if (tour.isTest) {
+      return {
+        amount: tour.basePrice,
+        subtotal: tour.basePrice,
+        gatewayFee: 0,
+        requiresAvailabilityCheck: false,
+        quoteOnly: false,
+        breakdown: [{ label: "Producto de prueba", amount: tour.basePrice }]
+      };
+    }
+
     const passengers = Math.max(input.passengers ?? 2, tour.minimumPassengers ?? 2);
     const tourPrice = tour.pricingMode === "global" ? tour.basePrice : tour.basePrice * passengers;
     const surcharge = getVehicleSurcharge(input.vehicleType);

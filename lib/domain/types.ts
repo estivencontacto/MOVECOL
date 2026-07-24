@@ -64,6 +64,7 @@ export type Tour = {
   recommendations?: string[];
   keywords?: string[];
   featured?: boolean;
+  isTest?: boolean;
 };
 
 export type Service = {

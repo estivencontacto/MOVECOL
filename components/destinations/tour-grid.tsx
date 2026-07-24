@@ -75,7 +75,7 @@ export function TourGrid({
                 />
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/70 to-transparent p-4">
                   <Badge className="bg-background/92 text-foreground">
-                    {tour.pricingMode === "global" ? "Plan global" : "Plan privado"}
+                    {tour.isTest ? "Prueba de pago" : tour.pricingMode === "global" ? "Plan global" : "Plan privado"}
                   </Badge>
                 </div>
                 <span className="premium-icon absolute right-4 top-4 border-white/35 bg-white/95">
